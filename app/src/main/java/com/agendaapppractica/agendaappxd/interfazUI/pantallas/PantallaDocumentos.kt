@@ -49,7 +49,7 @@ fun PantallaDocumentos(navController: NavController) {
     val opcionesEscaner = remember {
         GmsDocumentScannerOptions.Builder()
             .setGalleryImportAllowed(true)
-            .setResultFormats(RESULT_FORMAT_PDF)
+            .setResultForm(RESULT_FORMAT_PDF)
             .setScannerMode(SCANNER_MODE_FULL)
             .build()
     }

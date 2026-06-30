@@ -40,7 +40,6 @@ fun PantallaInicio(
             .replaceFirstChar { it.uppercase() }
     }
 
-    // 🛠️ FIJADO: Cambiado de "groups" a "grupos" para hacer match con MainActivity
     val navegarAPestanaGrupos = {
         navController.navigate("grupos") {
             popUpTo(navController.graph.findStartDestination().id) { saveState = true }
@@ -93,7 +92,6 @@ fun PantallaInicio(
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     BotonPanelHerramientas("Notas", "Apuntes rápidos", Icons.Default.Description, MaterialTheme.colorScheme.tertiary, Modifier.weight(1f)) { navController.navigate("bloc_notas") }
 
-                    // 📸 🛠️ FIJADO: Se cambió 'colorIcono' por 'colorBase' para que coincida con tu componente
                     BotonPanelHerramientas(
                         titulo = "Documentos",
                         subtitulo = "Escanear PDF",

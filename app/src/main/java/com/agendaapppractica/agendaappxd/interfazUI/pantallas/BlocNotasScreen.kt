@@ -22,7 +22,7 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun BlocNotasScreen() { // 👈 Se quitó @OptIn(Material3Api::class)
+fun BlocNotasScreen() {
     val context = LocalContext.current
     val notaManager = remember { NotaManager(context) }
 
@@ -44,7 +44,6 @@ fun BlocNotasScreen() { // 👈 Se quitó @OptIn(Material3Api::class)
             )
         )
 
-        // --- SECCIÓN PARA CREAR NOTA ---
         Card(
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
@@ -85,7 +84,6 @@ fun BlocNotasScreen() { // 👈 Se quitó @OptIn(Material3Api::class)
             }
         }
 
-        // --- LISTADO DE NOTAS CON FECHA Y HORA ---
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.fillMaxSize()

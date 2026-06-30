@@ -36,17 +36,15 @@ fun ContenedorApp(
     val scope = rememberCoroutineScope()
     var infoActualizacion by remember { mutableStateOf<UpdateManager.UpdateInfo?>(null) }
 
-    // 🚀 SISTEMA DE ACTUALIZACIÓN: Comprobar al arrancar el menú principal
     LaunchedEffect(Unit) {
         infoActualizacion = UpdateManager.verificarActualizacion()
     }
 
-    // Alerta de actualización disponible In-App
     if (infoActualizacion != null) {
         AlertDialog(
             onDismissRequest = { infoActualizacion = null },
             title = { Text("Actualización disponible") },
-            text = { Text("Hay una nueva versión disponible (v${infoActualizacion?.versionName}). ¿Deseas descargarla e instalarla ahora?") },
+            text = { Text("Hay una nueva versión disponible (v${infoActualizacion?.versionName}). Si decides actualizar más tarde, ten en cuenta que no contarás con las últimas mejoras, correcciones de errores ni las nuevas funciones añadidas.") },
             confirmButton = {
                 Button(
                     onClick = {
@@ -60,7 +58,7 @@ fun ContenedorApp(
                         infoActualizacion = null
                     }
                 ) {
-                    Text("Actualizar")
+                    Text("Actualizar ahora")
                 }
             },
             dismissButton = {
@@ -109,7 +107,6 @@ fun ContenedorApp(
             }
         ) {
             val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-            // 🛠️ Agregamos las pantallas de documentos/lector al modo pantalla completa si no deseas barras superior/inferior en ellas
             val modoPantallaCompleta = currentRoute == "bloc_notas" ||
                     currentRoute?.startsWith("crear_nota/") == true ||
                     currentRoute == "documentos" ||
@@ -197,12 +194,10 @@ fun ContenedorApp(
                         )
                     }
 
-                    // 📸 🆕 NUEVO: Ruta para el listado de documentos y escáner nativo
                     composable("documentos") {
                         PantallaDocumentos(navController = navController)
                     }
 
-                    // 📄 🆕 NUEVO: Ruta para visualizar el PDF
                     composable(
                         route = "lector_pdf/{pdfUri}",
                         arguments = listOf(navArgument("pdfUri") { type = NavType.StringType })

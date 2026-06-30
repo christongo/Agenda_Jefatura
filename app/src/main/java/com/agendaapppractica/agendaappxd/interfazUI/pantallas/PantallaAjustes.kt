@@ -58,7 +58,6 @@ fun tienePermisoNotificaciones(context: Context): Boolean {
     }
 }
 
-// 🆕 Función nativa para verificar el permiso de la Cámara
 fun tienePermisoCamara(context: Context): Boolean {
     return ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
 }
@@ -130,7 +129,7 @@ fun PantallaAjustes(
         }
     }
 
-    // 🆕 Launcher para solicitar el acceso a la cámara
+
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { esConcedido ->
@@ -281,7 +280,6 @@ fun PantallaAjustes(
         )
     }
 
-    // 🆕 Dialogo de permisos actualizado inyectando los estados y lanzadores de la cámara
     if (mostrarDialogoPermisos) {
         DialogoPermisosApp(
             permisoConcedidoEstado = permisoConcedidoEstado,

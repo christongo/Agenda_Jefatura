@@ -19,7 +19,6 @@ import java.net.URL
 
 object UpdateManager {
 
-    // 🌐 Coloca aquí tu URL pública donde alojarás el JSON (GitHub, Hosting, etc.)
     private const val URL_VERSION_JSON = "https://tu-servidor.com/update.json"
 
     class UpdateInfo(val urlApk: String, val versionCode: Int, val versionName: String)

@@ -6,5 +6,5 @@ data class Nota(
     val id: String = UUID.randomUUID().toString(),
     val titulo: String = "",
     val contenido: String = "",
-    val fechaCreacion: Long = System.currentTimeMillis() // Guarda los milisegundos exactos
+    val fechaCreacion: Long = System.currentTimeMillis()
 )

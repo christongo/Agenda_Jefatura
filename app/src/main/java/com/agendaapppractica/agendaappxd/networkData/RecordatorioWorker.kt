@@ -16,7 +16,6 @@ class RecordatorioWorker(
         val mensaje = inputData.getString("mensaje") ?: ""
 
         val notification = NotificationCompat.Builder(applicationContext, NotificationHelper.CHANNEL_ID)
-            // SOLUCIÓN: Cambiado a un recurso drawable compatible con las directrices de Android
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle(titulo)
             .setContentText(mensaje)

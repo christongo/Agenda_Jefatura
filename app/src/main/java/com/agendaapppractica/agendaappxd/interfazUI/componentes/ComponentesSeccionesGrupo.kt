@@ -43,7 +43,7 @@ fun SeccionDetalles(
     esCreador: Boolean,
     listaSolicitudes: List<MiembroUsuario>,
     cargandoSolicitudes: Boolean,
-    onSolicitudProcesada: (String, Boolean) -> Unit // true = aceptar, false = rechazar
+    onSolicitudProcesada: (String, Boolean) -> Unit
 ) {
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
@@ -106,7 +106,6 @@ fun SeccionDetalles(
 
         Spacer(Modifier.height(16.dp))
 
-        // 🔥 APARTADO NUEVO: SOLICITUDES DE UNIÓN (SOLO VISIBLE PARA EL ADMINISTRADOR/CREADOR)
         if (esCreador) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -137,7 +136,6 @@ fun SeccionDetalles(
                             color = MaterialTheme.colorScheme.outline
                         )
                     } else {
-                        // Desplegar cada usuario que solicitó unirse
                         listaSolicitudes.forEach { solicitante ->
                             Row(
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
@@ -149,14 +147,13 @@ fun SeccionDetalles(
                                     Text(text = solicitante.correo, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                                 }
                                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    // ACEPTAR
+
                                     IconButton(
                                         onClick = { onSolicitudProcesada(solicitante.uid, true) },
                                         modifier = Modifier.background(MaterialTheme.colorScheme.primary, CircleShape).size(32.dp)
                                     ) {
                                         Icon(Icons.Default.Check, contentDescription = "Aceptar", tint = Color.White, modifier = Modifier.size(16.dp))
                                     }
-                                    // RECHAZAR
                                     IconButton(
                                         onClick = { onSolicitudProcesada(solicitante.uid, false) },
                                         modifier = Modifier.background(MaterialTheme.colorScheme.errorContainer, CircleShape).size(32.dp)

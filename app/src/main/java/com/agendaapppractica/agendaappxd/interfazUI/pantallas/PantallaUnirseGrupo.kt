@@ -21,7 +21,6 @@ fun PantallaUnirseGrupo(
     val firestore = remember { FirestoreManager() }
     var codigoGroup by remember { mutableStateOf("") }
 
-    // Estados para controlar la respuesta de la base de datos
     var cargando by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -49,7 +48,6 @@ fun PantallaUnirseGrupo(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Icono de cabecera estético
             Icon(
                 imageVector = Icons.Default.Key,
                 contentDescription = null,
@@ -75,7 +73,6 @@ fun PantallaUnirseGrupo(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de texto enfocado en el código
             OutlinedTextField(
                 value = codigoGroup,
                 onValueChange = { codigoGroup = it },
@@ -97,7 +94,6 @@ fun PantallaUnirseGrupo(
                     if (codigoGroup.isNotBlank()) {
                         cargando = true
 
-                        // 🔥 CORREGIDO: Ahora validamos el resultado real que devuelve Firebase
                         firestore.unirseAGrupo(codigoGroup) { exitoso ->
                             cargando = false
                             if (exitoso) {
@@ -106,7 +102,7 @@ fun PantallaUnirseGrupo(
                                         message = "¡Solicitud enviada al administrador!",
                                         duration = SnackbarDuration.Short
                                     )
-                                    onVolver() // Volvemos de forma segura solo si se envió con éxito
+                                    onVolver()
                                 }
                             } else {
                                 scope.launch {

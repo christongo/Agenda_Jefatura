@@ -17,7 +17,6 @@ fun ComponenteRecordatorios(
     avisosSeleccionados: Set<Long>,
     onAvisosCambio: (Set<Long>) -> Unit
 ) {
-    // Controlar si la ventana emergente de avisos está abierta
     var mostrarModalAvisos by remember { mutableStateOf(false) }
 
     val opcionesAvisos = listOf(
@@ -30,7 +29,6 @@ fun ComponenteRecordatorios(
         "2 días antes" to 2880L
     )
 
-    // Texto dinámico para mostrar en el botón qué tiene seleccionado el usuario actualmente
     val textoResumen = remember(avisosSeleccionados) {
         if (avisosSeleccionados.isEmpty()) {
             "Sin recordatorios"
@@ -39,12 +37,11 @@ fun ComponenteRecordatorios(
         }
     }
 
-    // Botón estilizado como campo de selección que abre el diálogo emergente
     OutlinedTextField(
         value = textoResumen,
         onValueChange = {},
         readOnly = true,
-        enabled = false, // Permite delegar el click al contenedor padre
+        enabled = false,
         label = { Text("Configurar Avisos") },
         leadingIcon = { Icon(Icons.Default.NotificationsActive, null, tint = MaterialTheme.colorScheme.primary) },
         modifier = Modifier
@@ -58,7 +55,6 @@ fun ComponenteRecordatorios(
         )
     )
 
-    // Ventana emergente (Popup) con las opciones de programación de avisos
     if (mostrarModalAvisos) {
         AlertDialog(
             onDismissRequest = { mostrarModalAvisos = false },
@@ -87,7 +83,7 @@ fun ComponenteRecordatorios(
                         ) {
                             Checkbox(
                                 checked = avisosSeleccionados.contains(opcion.second),
-                                onCheckedChange = null // Click controlado por toda la fila
+                                onCheckedChange = null
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(opcion.first, style = MaterialTheme.typography.bodyMedium)

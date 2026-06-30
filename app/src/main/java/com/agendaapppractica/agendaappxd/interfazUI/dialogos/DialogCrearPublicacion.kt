@@ -49,7 +49,6 @@ fun DialogCrearPublicacion(
     var mostrarSelectorHoraModal by remember { mutableStateOf(false) }
     var fechaSeleccionadaCalendar by remember { mutableStateOf(LocalDate.now()) }
 
-    // 🌟 ESTADO NUEVO: Controla si se abre la ventana de confirmación de anuncio masivo
     var mostrarConfirmarAnuncioModal by remember { mutableStateOf(false) }
 
     AlertDialog(
@@ -132,7 +131,6 @@ fun DialogCrearPublicacion(
         confirmButton = {
             Button(
                 onClick = {
-                    // 🌟 MODIFICADO: En lugar de guardar directo, abrimos la ventana de confirmación
                     mostrarConfirmarAnuncioModal = true
                 },
                 enabled = nuevoAnuncioTitulo.isNotBlank() && fechaInicioText.isNotBlank() && fechaFinText.isNotBlank()
@@ -143,7 +141,6 @@ fun DialogCrearPublicacion(
         }
     )
 
-    // 🌟 SUB-DIÁLOGO: Ventana emergente intermedio de aviso masivo para los miembros
     if (mostrarConfirmarAnuncioModal) {
         AlertDialog(
             onDismissRequest = { mostrarConfirmarAnuncioModal = false },
@@ -159,7 +156,6 @@ fun DialogCrearPublicacion(
                 Button(
                     onClick = {
                         mostrarConfirmarAnuncioModal = false
-                        // Guardamos indicando que SÍ se notifica al grupo (puedes añadir el parámetro a tu firestore manager)
                         firestore.crearEventoGrupo(
                             grupoId = grupoId,
                             titulo = nuevoAnuncioTitulo,
@@ -183,7 +179,6 @@ fun DialogCrearPublicacion(
                 TextButton(
                     onClick = {
                         mostrarConfirmarAnuncioModal = false
-                        // Guardamos normal sin lanzar notificaciones masivas push instantáneas
                         firestore.crearEventoGrupo(
                             grupoId = grupoId,
                             titulo = nuevoAnuncioTitulo,

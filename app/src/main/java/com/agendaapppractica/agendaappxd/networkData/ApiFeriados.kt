@@ -9,6 +9,6 @@ data class RespuestaFeriados(
 )
 
 interface ApiFeriados {
-    @GET("holidays.json") // Trae automáticamente todos los feriados del año actual
+    @GET("holidays.json")
     suspend fun obtenerFeriados(): RespuestaFeriados
 }

@@ -102,7 +102,6 @@ fun AgendaappxdTheme(
             }
         }
 
-        // 🔥 NUEVO COLOR: ROSA
         "Rosa" -> {
             if (darkTheme) {
                 darkColorScheme(
@@ -125,7 +124,6 @@ fun AgendaappxdTheme(
             }
         }
 
-        // 🔥 NUEVO COLOR: CIAN
         "Cian" -> {
             if (darkTheme) {
                 darkColorScheme(
@@ -148,7 +146,7 @@ fun AgendaappxdTheme(
             }
         }
 
-        else -> { // Morado
+        else -> {
             if (darkTheme) {
                 darkColorScheme(
                     primary = Color(0xFFBA68C8),

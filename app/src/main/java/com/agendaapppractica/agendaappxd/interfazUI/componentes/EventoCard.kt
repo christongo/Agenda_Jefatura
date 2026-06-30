@@ -25,13 +25,12 @@ fun obtenerTiempoTranscurrido(fechaInicioStr: String, horaInicioStr: String): St
     if (fechaEvento == null) return "Actualizado recientemente"
 
     val ahora = Date()
-    // Corregido: Uso correcto de .after() para objetos Date en Kotlin
     if (fechaEvento.after(ahora)) return "Planificado"
 
     val diferenciaMs = ahora.time - fechaEvento.time
     val segundos = diferenciaMs / 1000
     val minutos = segundos / 60
-    val horas = minutos / 60 // ¡Corregido aquí de minutes a minutos!
+    val horas = minutos / 60
     val dias = horas / 24
 
     return when {
@@ -45,7 +44,7 @@ fun obtenerTiempoTranscurrido(fechaInicioStr: String, horaInicioStr: String): St
 @Composable
 fun EventoCard(
     tarea: Tarea,
-    esPropietario: Boolean, // Controla de forma estricta los permisos visuales
+    esPropietario: Boolean,
     onEliminar: () -> Unit,
     onEditar: () -> Unit
 ) {
@@ -149,7 +148,6 @@ fun EventoCard(
                     Icon(imageVector = if (tarea.visibilidad == "Publico") Icons.Default.Public else Icons.Default.Lock, contentDescription = null, tint = colorEstado.copy(alpha = 0.7f), modifier = Modifier.size(24.dp))
                 },
                 trailingContent = {
-                    // 🔥 SEGURIDAD VISUAL OPTIMIZADA: Si no eres propietario, no ves absolutamente ninguna opción
                     if (esPropietario) {
                         Box {
                             IconButton(onClick = { menuAbierto = true }) {

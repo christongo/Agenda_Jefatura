@@ -20,7 +20,6 @@ object ProgramadorRecordatorios {
 
             val ahora = Date()
 
-            // 1. Programar avisos personalizados configurados por el usuario
             tarea.avisosMinutosAntes.forEach { minutos ->
                 val tiempoAlerta = fechaInicio.time - TimeUnit.MINUTES.toMillis(minutos)
                 val delay = tiempoAlerta - ahora.time
@@ -31,13 +30,11 @@ object ProgramadorRecordatorios {
                 }
             }
 
-            // 2. Programar aviso justo al iniciar el evento
             val delayInicio = fechaInicio.time - ahora.time
             if (delayInicio > 0) {
                 programar(context, tarea.titulo, obtenerMensajeInicio(tarea.tipoEvento), delayInicio)
             }
 
-            // 3. Programar aviso al finalizar el evento
             fechaFin?.let {
                 val delayFin = it.time - ahora.time
                 if (delayFin > 0) {
@@ -46,7 +43,6 @@ object ProgramadorRecordatorios {
             }
 
         } catch (_: Exception) {
-            // Manejo silencioso original
         }
     }
 
@@ -66,7 +62,6 @@ object ProgramadorRecordatorios {
         WorkManager.getInstance(context).enqueue(request)
     }
 
-    // 🌟 Función matemática para transformar minutos en textos legibles amigables
     private fun generarMensajeAnticipado(tipoEvento: String, minutos: Long): String {
         val textoTiempo = when {
             minutos == 0L -> "ahora"

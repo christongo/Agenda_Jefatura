@@ -21,12 +21,10 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun NavegacionPrincipal(sharedPref: SharedPreferences) {
-    // 🛠️ CORREGIDO: Se cambió 'AutenticacionManager.esInvitado' por 'AutenticacionManager.sesionComoInvitadoLocal'
     var usuarioLogueado by remember {
         mutableStateOf(sharedPref.getBoolean("isLoggedIn", false) && !AutenticacionManager.sesionComoInvitadoLocal)
     }
 
-    // ⏳ Controla si se debe mostrar la capa de carga superpuesta
     var mostrandoPantallaCarga by remember { mutableStateOf(false) }
 
     var darkTheme by remember { mutableStateOf(sharedPref.getBoolean("darkMode", false)) }
@@ -35,20 +33,17 @@ fun NavegacionPrincipal(sharedPref: SharedPreferences) {
     var grosorLinea by remember { mutableStateOf(sharedPref.getFloat("grosorLinea", 1.5f)) }
     var mostrarRegistro by remember { mutableStateOf(false) }
 
-    // 🌟 EFECTO DE TEMPORIZADOR ELEGANTE
     LaunchedEffect(mostrandoPantallaCarga) {
         if (mostrandoPantallaCarga) {
-            delay(1800) // 1.8 segundos mantiene un ritmo ágil y premium
+            delay(1800)
             mostrandoPantallaCarga = false
             usuarioLogueado = true
         }
     }
 
-    // 🎨 El tema envuelve TODO para que la pantalla de carga respete el modo oscuro al instante
     AgendaappxdTheme(darkTheme = darkTheme, colorTema = colorTema) {
         Box(modifier = Modifier.fillMaxSize()) {
 
-            // 🎯 1. CAPA BASE: PANTALLAS DE LOGUEO O MENÚ PRINCIPAL
             if (!usuarioLogueado && !mostrandoPantallaCarga) {
                 if (mostrarRegistro) {
                     PantallaRegistro(
@@ -66,7 +61,6 @@ fun NavegacionPrincipal(sharedPref: SharedPreferences) {
                     )
                 }
             } else if (usuarioLogueado) {
-                // Estructura principal de la app (Scaffold, Drawer, NavHost)
                 ContenedorApp(
                     sharedPref = sharedPref,
                     darkTheme = darkTheme,
@@ -78,7 +72,6 @@ fun NavegacionPrincipal(sharedPref: SharedPreferences) {
                     onTipoTexturaChange = { tipoTextura = it },
                     onGrosorLineaChange = { grosorLinea = it },
                     onCerrarSesionClick = {
-                        // 🛠️ CORREGIDO: Cierre seguro limpiando Firebase Auth y el estado de invitado
                         FirebaseAuth.getInstance().signOut()
                         AutenticacionManager.sesionComoInvitadoLocal = false
 
@@ -88,7 +81,6 @@ fun NavegacionPrincipal(sharedPref: SharedPreferences) {
                 )
             }
 
-            // 🌟 2. CAPA SUPERIOR: PANTALLA DE CARGA CON DESVANECIMIENTO GRADUAL
             AnimatedVisibility(
                 visible = mostrandoPantallaCarga,
                 enter = fadeIn(animationSpec = tween(400)),
