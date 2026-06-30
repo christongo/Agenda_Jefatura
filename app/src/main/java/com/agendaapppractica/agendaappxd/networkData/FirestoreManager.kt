@@ -115,7 +115,6 @@ class FirestoreManager {
             .update(mapOf("nombre" to nuevoNombre, "descripcion" to nuevaDescripcion))
     }
 
-    // 🔥 NUEVA: Implementación asíncrona compatible con los componentes separados
     fun actualizarDetallesGrupo(grupoId: String, nuevoNombre: String, nuevaDescripcion: String, onResultado: (Boolean) -> Unit) {
         db.collection(coleccionGrupos)
             .document(grupoId)

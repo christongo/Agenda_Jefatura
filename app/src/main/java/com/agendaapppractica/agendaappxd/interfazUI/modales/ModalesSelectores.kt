@@ -49,7 +49,6 @@ fun ModalSeleccionarVisibilidad(
                         onClick = { onSeleccion(opcion); onDismiss() },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        // Muestra "Personal" o "Grupo" con la primera letra en mayúscula
                         Text(opcion.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.bodyLarge)
                     }
                 }

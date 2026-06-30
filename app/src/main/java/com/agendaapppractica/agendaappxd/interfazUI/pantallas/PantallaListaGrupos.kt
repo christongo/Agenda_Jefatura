@@ -102,7 +102,6 @@ fun PantallaGruposLista(
                         }
                     }
                 } else {
-                    // 🌟 CAMBIO CLAVE: Usamos una cuadrícula moderna de 2 columnas en lugar de una lista vertical rígida
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         horizontalArrangement = Arrangement.spacedBy(14.dp),
@@ -116,7 +115,6 @@ fun PantallaGruposLista(
                             val esCreador = grupo.creadorId == uid
                             var menuAbierto by remember { mutableStateOf(false) }
 
-                            // Tarjeta minimalista tipo "Card-Widget"
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -128,7 +126,6 @@ fun PantallaGruposLista(
                                     .clickable { grupoSeleccionado = grupo }
                                     .padding(14.dp)
                             ) {
-                                // Tres puntos superiores integrados sutilmente
                                 Box(
                                     modifier = Modifier.align(Alignment.TopEnd)
                                 ) {
@@ -166,12 +163,10 @@ fun PantallaGruposLista(
                                     }
                                 }
 
-                                // Contenido centralizado de la Tarjeta
                                 Column(
                                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                                     horizontalAlignment = Alignment.Start
                                 ) {
-                                    // Inicial destacada
                                     Box(
                                         modifier = Modifier
                                             .size(40.dp)
@@ -187,7 +182,6 @@ fun PantallaGruposLista(
 
                                     Spacer(Modifier.height(16.dp))
 
-                                    // Nombre del grupo restringido a max 2 líneas para evitar deformaciones
                                     Text(
                                         text = grupo.nombre,
                                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
@@ -198,7 +192,6 @@ fun PantallaGruposLista(
 
                                     Spacer(Modifier.height(4.dp))
 
-                                    // Subtexto fino de miembros
                                     Text(
                                         text = if (grupo.miembros.size == 1) "1 miembro" else "${grupo.miembros.size} miembros",
                                         style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),

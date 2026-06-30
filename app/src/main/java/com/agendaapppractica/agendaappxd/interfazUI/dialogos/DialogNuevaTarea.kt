@@ -61,7 +61,6 @@ fun DialogNuevaTarea(
     var visibilidad by remember { mutableStateOf("personal") }
     var grupoSeleccionado by remember { mutableStateOf("") }
 
-    // 🔥 CORREGIDO: Ahora inicia totalmente vacío, sin ninguna alerta preseleccionada
     var avisosSeleccionados by remember { mutableStateOf(setOf<Long>()) }
     var avisosTemporales by remember { mutableStateOf(avisosSeleccionados) }
 
@@ -140,7 +139,6 @@ fun DialogNuevaTarea(
                 modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // 📝 BLOQUE 1: DETALLES
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -167,7 +165,6 @@ fun DialogNuevaTarea(
                     }
                 }
 
-                // ⏰ BLOQUE 2: TIEMPOS Y HORARIO
                 val colorTiempoCard = if (horarioProgramado && !esPeriodoValido) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
@@ -195,7 +192,6 @@ fun DialogNuevaTarea(
                     }
                 }
 
-                // 🏷️ BLOQUE 3: CATEGORÍA Y VISIBILIDAD
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     ElevatedCard(
                         modifier = Modifier.weight(1f),
@@ -239,7 +235,6 @@ fun DialogNuevaTarea(
                     }
                 }
 
-                // 🔔 BLOQUE 4: RECORDATORIOS AVANZADOS
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -290,9 +285,7 @@ fun DialogNuevaTarea(
         }
     )
 
-    // ==========================================
-    // DELEGACIÓN EN NUESTROS COMPONENTES EXTERNOS
-    // ==========================================
+
     if (showModalProgramacion) {
         ModalProgramarHorario(
             fechaInicio = fechaInicio,
@@ -319,7 +312,6 @@ fun DialogNuevaTarea(
         )
     }
 
-    // --- ACTIVADORES DE SELECTORES NATIVOS ---
     if (showCalendarioInicio) {
         ModalCalendarioInicio(fechaInicio = fechaInicio, feriados = feriados, onFechaSeleccionada = { fechaInicio = it; showCalendarioInicio = false }, onDismiss = { showCalendarioInicio = false })
     }
@@ -333,7 +325,6 @@ fun DialogNuevaTarea(
         ModalTimePickerFin(onHoraSeleccionada = { horaFin = it; showTimePickerFin = false }, onDismiss = { showTimePickerFin = false })
     }
 
-    // --- OTROS MODALES DE CONFIGURACIÓN ---
     if (showModalVisibilidad) {
         ModalSeleccionarVisibilidad(opciones = listOf("personal", "grupo"), onSeleccion = { seleccion -> visibilidad = seleccion; showModalVisibilidad = false; if (seleccion == "grupo") showModalGrupo = true else grupoSeleccionado = "" }, onDismiss = { showModalVisibilidad = false })
     }

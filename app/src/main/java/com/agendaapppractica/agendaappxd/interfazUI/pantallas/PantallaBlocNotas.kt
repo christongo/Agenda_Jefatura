@@ -30,7 +30,7 @@ data class NotaModel(
     val id: String = "",
     val titulo: String = "",
     val contenido: String = "",
-    val usuarioId: String = "" // Vinculará la nota al creador
+    val usuarioId: String = ""
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,11 +44,9 @@ fun PantallaBlocNotas(
     val db = remember { FirebaseFirestore.getInstance() }
     val usuarioActual = auth.currentUser
 
-    // Lista reactiva para las notas traídas de Firebase
     val listaNotas = remember { mutableStateListOf<NotaModel>() }
     var cargando by remember { mutableStateOf(true) }
 
-    // 🔄 Escuchar notas en tiempo real filtradas por el usuario actual
     LaunchedEffect(usuarioActual?.uid) {
         if (usuarioActual != null) {
             db.collection("notas")
@@ -197,7 +195,6 @@ fun PantallaBlocNotas(
                                             text = { Text("Eliminar", color = MaterialTheme.colorScheme.error) },
                                             onClick = {
                                                 menuExpandido = false
-                                                // 🗑️ Eliminación directa desde Firestore
                                                 db.collection("notas").document(nota.id).delete()
                                             }
                                         )

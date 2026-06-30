@@ -41,10 +41,9 @@ fun PantallaEventos() {
     var mapaEventosGrupos by remember { mutableStateOf<Map<String, List<Tarea>>>(emptyMap()) }
     var tareaEditando by remember { mutableStateOf<Tarea?>(null) }
 
-    var tabSeleccionada by remember { mutableStateOf(0) } // 0: Hoy, 1: En Curso, 2: Próximos, 3: Historial
+    var tabSeleccionada by remember { mutableStateOf(0) }
     var filtroOrigen by remember { mutableStateOf("todos") }
 
-    // Diálogo de Edición
     tareaEditando?.let { tarea ->
         DialogEditarEvento(
             tarea = tarea,
@@ -90,7 +89,6 @@ fun PantallaEventos() {
 
     val todosLosEventosDeMisGrupos = mapaEventosGrupos.values.flatten()
 
-    // --- FILTRADO DE PRIVACIDAD ---
     val todosEventos = (personales + todosLosEventosDeMisGrupos)
         .distinctBy { it.id }
         .filter { tarea ->
@@ -104,7 +102,6 @@ fun PantallaEventos() {
             runCatching { formatterCompleto.parse("${tarea.fecha} ${tarea.hora}") }.getOrNull()
         }
 
-    // 🗓️ 1. PESTAÑA: HOY
     val eventosDeHoy = todosEventos.filter { tarea ->
         tarea.fecha == hoyTexto || runCatching {
             val inicio = formatterSoloFecha.parse(tarea.fecha)
@@ -114,13 +111,11 @@ fun PantallaEventos() {
         }.getOrDefault(false)
     }
 
-    // 🗓️ 3. PESTAÑA: PRÓXIMOS
     val proximos = todosEventos.filter { tarea ->
         val inicio = runCatching { formatterCompleto.parse("${tarea.fecha} ${tarea.hora}") }.getOrNull()
         inicio != null && inicio.after(ahora) && tarea.fecha != hoyTexto
     }
 
-    // 📂 4. PESTAÑA: HISTORIAL
     val finalizados = todosEventos.filter { tarea ->
         val fin = runCatching { formatterCompleto.parse("${tarea.fechaFin} ${tarea.horaFin}") }.getOrNull()
         fin != null && ahora.after(fin) && tarea.fechaFin != hoyTexto
@@ -211,7 +206,6 @@ fun PantallaEventos() {
         }
     ) { paddingValues ->
 
-        // 🔥 Si está seleccionada la pestaña "En Curso", mostramos directamente el aviso de Próximamente
         if (tabSeleccionada == 1) {
             Box(
                 modifier = Modifier

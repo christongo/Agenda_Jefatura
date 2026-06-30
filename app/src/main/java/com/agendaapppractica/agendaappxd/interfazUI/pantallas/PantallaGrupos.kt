@@ -32,7 +32,6 @@ fun PantallaGrupos(
     var nombreNuevoGrupo by remember { mutableStateOf("") }
     var cargando by remember { mutableStateOf(false) }
 
-    // 🌟 Controladores para el Snackbar de éxito
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
@@ -51,7 +50,6 @@ fun PantallaGrupos(
                     .padding(horizontal = 24.dp, vertical = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                // --- TÍTULO SECCIÓN ---
                 Text(
                     text = "Grupos de Trabajo",
                     style = MaterialTheme.typography.headlineMedium.copy(
@@ -62,12 +60,10 @@ fun PantallaGrupos(
                     modifier = Modifier.padding(top = 8.dp)
                 )
 
-                // --- ACCIONES RÁPIDAS (HORIZONTAL) ---
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Caja: Crear Grupo (Abre el diálogo interno)
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -109,7 +105,6 @@ fun PantallaGrupos(
                         }
                     }
 
-                    // Caja: Unirse a Grupo
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -152,7 +147,6 @@ fun PantallaGrupos(
                     }
                 }
 
-                // --- SECCIÓN COMUNIDADES ABAJO ---
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
                         text = "Tus Comunidades",
@@ -216,7 +210,6 @@ fun PantallaGrupos(
         }
     }
 
-    // --- DIÁLOGO MODAL MODERNO PARA CREAR GRUPO ---
     if (mostrarDialogoCrear) {
         AlertDialog(
             onDismissRequest = {
@@ -273,20 +266,18 @@ fun PantallaGrupos(
                                 descripcion = "Grupo de trabajo creado desde la app"
                             )
 
-                            // 🔥 Lanzamos el aviso y retrasamos levemente el cambio de pantalla
                             coroutineScope.launch {
                                 mostrarDialogoCrear = false
                                 val nombreGuardado = nombreNuevoGrupo
                                 nombreNuevoGrupo = ""
                                 cargando = false
 
-                                // Muestra el mensaje flotante en pantalla
                                 snackbarHostState.showSnackbar(
                                     message = "¡Grupo \"$nombreGuardado\" creado exitosamente!",
                                     duration = SnackbarDuration.Short
                                 )
-                                delay(500) // Pausa de medio segundo para que el usuario asimile el aviso
-                                onMisGruposClick() // Redirige automáticamente
+                                delay(500)
+                                onMisGruposClick()
                             }
                         }
                     },

@@ -35,7 +35,7 @@ fun ModalSeleccionarGrupo(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 250.dp) // 🌟 CORRECCIÓN: Cambiado de .maxHeight a .heightIn
+                        .heightIn(max = 250.dp)
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {

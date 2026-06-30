@@ -57,7 +57,6 @@ fun PantallaRegistro(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // 🌐 Tu ID de cliente web real que obtuvimos de Firebase
     val webClientId = "342977426699-d9uak4tovu00mvot8qbur68vh6qb01e5.apps.googleusercontent.com"
 
     val animacionEntradaScale = remember { Animatable(0.95f) }
@@ -85,7 +84,6 @@ fun PantallaRegistro(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // --- ENCABEZADO ---
             Text(
                 text = "Crear Cuenta",
                 style = MaterialTheme.typography.headlineLarge.copy(
@@ -105,7 +103,6 @@ fun PantallaRegistro(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // --- CAMPO: NOMBRES ---
             OutlinedTextField(
                 value = nombres,
                 onValueChange = { nombres = it; mensaje = "" },
@@ -123,7 +120,6 @@ fun PantallaRegistro(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- CAMPO: APELLIDOS ---
             OutlinedTextField(
                 value = apellidos,
                 onValueChange = { apellidos = it; mensaje = "" },
@@ -141,7 +137,6 @@ fun PantallaRegistro(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- CAMPO: CORREO ELECTRÓNICO ---
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it; mensaje = "" },
@@ -159,7 +154,6 @@ fun PantallaRegistro(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- CAMPO: CONTRASEÑA ---
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it; mensaje = "" },
@@ -187,7 +181,6 @@ fun PantallaRegistro(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- CAMPO: CONFIRMAR CONTRASEÑA ---
             OutlinedTextField(
                 value = confirmarPassword,
                 onValueChange = { confirmarPassword = it; mensaje = "" },
@@ -228,7 +221,6 @@ fun PantallaRegistro(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- BOTÓN PRINCIPAL: REGISTRARME ---
             Button(
                 onClick = {
                     if (nombres.isBlank()) { mensaje = "Ingresa tus nombres"; return@Button }
@@ -285,7 +277,6 @@ fun PantallaRegistro(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // --- DIVISOR INTERNO ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -302,7 +293,6 @@ fun PantallaRegistro(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🌟 --- BOTÓN DE REGISTRO CON GOOGLE (ACTUALIZADO CON FLUJO REAL) ---
             OutlinedButton(
                 onClick = {
                     mensaje = ""
@@ -310,7 +300,7 @@ fun PantallaRegistro(
 
                     val credentialManager = CredentialManager.create(context)
                     val googleIdOption = GetGoogleIdOption.Builder()
-                        .setFilterByAuthorizedAccounts(false) // Permite seleccionar cualquier cuenta libremente
+                        .setFilterByAuthorizedAccounts(false)
                         .setServerClientId(webClientId)
                         .setAutoSelectEnabled(false)
                         .build()
@@ -333,7 +323,6 @@ fun PantallaRegistro(
                                         if (task.isSuccessful) {
                                             val user = auth.currentUser
                                             if (user != null) {
-                                                // Guardamos al usuario de forma automática en la base de Firestore
                                                 FirestoreManager().guardarUsuario(
                                                     uid = user.uid,
                                                     nombre = user.displayName ?: "Usuario Google",
@@ -381,7 +370,6 @@ fun PantallaRegistro(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- BOTÓN VOLVER ---
             TextButton(
                 onClick = volverLogin,
                 enabled = !cargando,

@@ -13,13 +13,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp // 🛠️ FIJADO: Importación necesaria para usar .dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class) // 🛠️ FIJADO: Añadido '::class' para corregir el error de la anotación
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LectorPdf(pdfUriString: String, navController: NavController) {
     val context = LocalContext.current
@@ -36,7 +36,6 @@ fun LectorPdf(pdfUriString: String, navController: NavController) {
                     }
                 },
                 actions = {
-                    // Botón para compartir o enviar a impresión el PDF generado
                     IconButton(onClick = {
                         if (archivo.exists()) {
                             val uriParaCompartir = FileProvider.getUriForFile(
@@ -62,10 +61,7 @@ fun LectorPdf(pdfUriString: String, navController: NavController) {
             modifier = Modifier.fillMaxSize().padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
-            // Nota constructiva: Para un renderizado integrado visual en pantalla completa dentro de Compose,
-            // se puede usar una librería externa como 'com.github.barteksc:android-pdf-viewer' mediante AndroidView.
-            // Por simplicidad inmediata, si el archivo existe, te muestro un texto indicando que está listo
-            // y puedes abrirlo con cualquier lector del sistema o usar WebView.
+
             if (archivo.exists()) {
                 Text(
                     text = "Documento cargado correctamente.\nUsa el botón superior para compartirlo, enviarlo por correo o mandarlo a imprimir.",

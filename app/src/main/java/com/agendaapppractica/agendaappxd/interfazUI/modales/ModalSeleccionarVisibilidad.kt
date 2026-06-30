@@ -48,7 +48,6 @@ fun ModalSeleccionarVisibilidadV2(
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
 
-                // Tarjeta 1: Personal (Solo Yo)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -89,7 +88,6 @@ fun ModalSeleccionarVisibilidadV2(
                     }
                 }
 
-                // Tarjeta 2: Compartir en Grupo
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -131,7 +129,7 @@ fun ModalSeleccionarVisibilidadV2(
                 }
             }
         },
-        confirmButton = {}, // No requiere botón de confirmación extra porque la tarjeta ya es autoejecutable
+        confirmButton = {},
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text("Cancelar", fontWeight = FontWeight.SemiBold)

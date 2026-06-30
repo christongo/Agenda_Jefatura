@@ -36,7 +36,6 @@ fun PantallaAgenda() {
     var tareasDia by remember { mutableStateOf<List<Tarea>>(emptyList()) }
     var feriados by remember { mutableStateOf<List<FeriadoChile>>(emptyList()) }
 
-    // Estados para la carga correcta de comunidades
     var misGruposIds by remember { mutableStateOf<List<String>>(emptyList()) }
     var misGruposCompletos by remember { mutableStateOf<List<com.agendaapppractica.agendaappxd.model.Grupo>>(emptyList()) }
 
@@ -50,7 +49,6 @@ fun PantallaAgenda() {
         }
     }
 
-    // 🔥 ESCUCHA UNIFICADA: Escucha grupos y anida la escucha de tareas del día de forma reactiva
     LaunchedEffect(fechaSeleccionada) {
         firestore.escucharMisGrupos { grupos ->
             misGruposCompletos = grupos
@@ -61,7 +59,6 @@ fun PantallaAgenda() {
             }
         }
 
-        // Carga de feriados nacionales
         try {
             val respuesta = RetrofitClient.api.obtenerFeriados()
             if (respuesta.status == "success") {
@@ -137,7 +134,7 @@ fun PantallaAgenda() {
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "📌 Resumen del día",
+                        text = " Resumen del día",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -152,7 +149,7 @@ fun PantallaAgenda() {
     if (mostrarDialog) {
         DialogNuevaTarea(
             fecha = fechaSeleccionada,
-            grupos = misGruposCompletos, // 🔥 Corregido: Ahora se envían los grupos del usuario
+            grupos = misGruposCompletos,
             feriados = feriados,
             onDismiss = { mostrarDialog = false },
             onGuardar = { tarea ->

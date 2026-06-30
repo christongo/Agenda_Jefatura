@@ -32,17 +32,15 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun DialogoCrearPublicacionGrupo(
     grupoId: String,
-    tipoPublicacion: String, // "Evento" o "Anuncio"
+    tipoPublicacion: String,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
     val formatoFechaApp = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-    // Estados de datos principales
     var tituloPublicacion by remember { mutableStateOf("") }
     var descripcionPublicacion by remember { mutableStateOf("") }
 
-    // Opciones estéticas y dinámicas según si es Evento o Anuncio
     val opcionesSubtipo = if (tipoPublicacion == "Anuncio") {
         listOf("Aviso", "Alerta", "Recordatorio", "Informativo")
     } else {
@@ -50,22 +48,18 @@ fun DialogoCrearPublicacionGrupo(
     }
     var subtipoSeleccionado by remember { mutableStateOf(opcionesSubtipo.first()) }
 
-    // Fechas y horas controladas
     var fechaInicio by remember { mutableStateOf(LocalDate.now()) }
     var fechaFin by remember { mutableStateOf(LocalDate.now()) }
 
-    // Selectores de Hora en formato 24H
     val horaInicioState = rememberTimePickerState(initialHour = 12, initialMinute = 0, is24Hour = true)
     val horaFinState = rememberTimePickerState(initialHour = 13, initialMinute = 0, is24Hour = true)
 
     val horaInicioTexto = String.format("%02d:%02d", horaInicioState.hour, horaInicioState.minute)
     val horaFinTexto = String.format("%02d:%02d", horaFinState.hour, horaFinState.minute)
 
-    // 🔥 GESTIÓN DE AVISOS Y RECORDATORIOS
     var avisosSeleccionados by remember { mutableStateOf(setOf<Long>()) }
     var avisosTemporales by remember { mutableStateOf(avisosSeleccionados) }
 
-    // Estados de visibilidad de sub-modales
     var showModalTexto by remember { mutableStateOf(false) }
     var showModalProgramacion by remember { mutableStateOf(false) }
     var showModalTipoSubcategoria by remember { mutableStateOf(false) }
@@ -77,7 +71,6 @@ fun DialogoCrearPublicacionGrupo(
     var showCalendarioFin by remember { mutableStateOf(false) }
     var showTimePickerFin by remember { mutableStateOf(false) }
 
-    // Validaciones lógicas de periodo
     val esPeriodoValido = remember(fechaInicio, fechaFin, horaInicioTexto, horaFinTexto) {
         try {
             val inicioDT = fechaInicio.atTime(LocalTime.parse(horaInicioTexto))
@@ -108,7 +101,6 @@ fun DialogoCrearPublicacionGrupo(
                 modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // 📝 BLOQUE 1: DETALLES GENERALES (Título y Contenido)
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -135,7 +127,6 @@ fun DialogoCrearPublicacionGrupo(
                     }
                 }
 
-                // ⏰ BLOQUE 2: CRONOGRAMA HORARIO (Fecha y Hora Inicio/Fin)
                 val colorTiempoCard = if (!esPeriodoValido) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
@@ -161,7 +152,6 @@ fun DialogoCrearPublicacionGrupo(
                     }
                 }
 
-                // 🏷️ BLOQUE 3: SELECCIÓN DE SUBCATEGORÍA
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -182,7 +172,6 @@ fun DialogoCrearPublicacionGrupo(
                     }
                 }
 
-                // 🔔 BLOQUE 4: ALERTAS Y RECORDATORIOS PROGRAMADOS EN GRUPO
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -215,7 +204,6 @@ fun DialogoCrearPublicacionGrupo(
             Button(
                 onClick = {
                     if (esFormularioValido) {
-                        // Si es un anuncio crítico, pedimos confirmación para alertar de inmediato
                         if (tipoPublicacion == "Anuncio" && listOf("Alerta", "Aviso").contains(subtipoSeleccionado)) {
                             mostrarConfirmarAnuncioPrioritario = true
                         } else {
@@ -227,7 +215,6 @@ fun DialogoCrearPublicacionGrupo(
                                 fechaFin = fechaFin.format(formatoFechaApp),
                                 horaFin = horaFinTexto,
                                 tipo = tipoPublicacion
-                                // Nota: si tu función Firestore recibe la lista de avisos, puedes mandarle: avisosMinutosAntes = avisosSeleccionados.toList().sorted()
                             )
                             Toast.makeText(context, "$tipoPublicacion guardado con éxito", Toast.LENGTH_LONG).show()
                             onDismiss()
@@ -243,9 +230,6 @@ fun DialogoCrearPublicacionGrupo(
         }
     )
 
-    // ==========================================
-    // DELEGACIÓN EN TUS MODALES COMPARTIDOS
-    // ==========================================
     if (showModalTexto) {
         ModalTextoTarea(
             tituloInicial = tituloPublicacion,
@@ -299,9 +283,6 @@ fun DialogoCrearPublicacionGrupo(
         )
     }
 
-    // ==========================================
-    // INTERFACES INTERNAS (TU CALENDARIO CHILE)
-    // ==========================================
     if (showCalendarioInicio) {
         Dialog(onDismissRequest = { showCalendarioInicio = false }) {
             Card(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
@@ -326,9 +307,7 @@ fun DialogoCrearPublicacionGrupo(
         }
     }
 
-    // ==========================================
-    // CONTROLES DE RELOJ INTEGRADOS (24H)
-    // ==========================================
+
     if (showTimePickerInicio) {
         Dialog(onDismissRequest = { showTimePickerInicio = false }) {
             Card(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
@@ -353,7 +332,6 @@ fun DialogoCrearPublicacionGrupo(
         }
     }
 
-    // Modal de Alerta Prioritaria para Anuncios Críticos
     if (mostrarConfirmarAnuncioPrioritario) {
         AlertDialog(
             onDismissRequest = { mostrarConfirmarAnuncioPrioritario = false },

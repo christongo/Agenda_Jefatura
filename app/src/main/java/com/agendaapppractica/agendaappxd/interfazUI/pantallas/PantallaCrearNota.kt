@@ -9,7 +9,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment // 👈 IMPORTACIÓN CORREGIDA
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -41,13 +41,11 @@ fun PantallaCrearNota(
     var contenidoNota by remember { mutableStateOf("") }
     var guardandoNota by remember { mutableStateOf(false) }
 
-    // 🛠️ SOLUCIÓN: Cambiado "por" por "by" para delegar correctamente el estado
     var cargandoNota by remember { mutableStateOf(notaId != null && notaId != "nueva") }
 
     val scope = rememberCoroutineScope()
     val lineaColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
 
-    // Escuchar cambios de Firebase si estamos editando
     LaunchedEffect(notaId) {
         if (notaId != null && notaId != "nueva") {
             db.collection("notas").document(notaId).get()

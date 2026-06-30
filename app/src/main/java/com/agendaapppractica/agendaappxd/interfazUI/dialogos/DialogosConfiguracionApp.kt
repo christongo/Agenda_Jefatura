@@ -35,10 +35,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 
-// Estructura para la selección de colores
 data class ItemColorTema(val nombre: String, val colorVisual: Color)
 
-// --- DIÁLOGO: EDITAR PERFIL COMPLETO ---
 @Composable
 fun DialogoEditarPerfil(
     nombreActual: String,
@@ -59,7 +57,6 @@ fun DialogoEditarPerfil(
     var tempApellido by remember { mutableStateOf(apellidoActual) }
     var tempTelefono by remember { mutableStateOf(telefonoActual) }
 
-    // 🛠️ Guardamos internamente solo los números limpios de la fecha
     var tempFechaNumeros by remember { mutableStateOf(fechaActual.filter { it.isDigit() }) }
 
     AlertDialog(
@@ -108,7 +105,6 @@ fun DialogoEditarPerfil(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // 🎭 Campo de fecha corregido con máscara automatizada y bloqueo estricto a 8 dígitos
                 OutlinedTextField(
                     value = tempFechaNumeros,
                     onValueChange = { entrada ->
@@ -131,13 +127,11 @@ fun DialogoEditarPerfil(
         confirmButton = {
             Button(onClick = {
                 auth.currentUser?.uid?.let { uid ->
-                    // Reconstruimos la fecha con sus barras correspondientes antes de guardarla en Firestore
                     val fechaFormateada = buildString {
                         if (tempFechaNumeros.length >= 2) append(tempFechaNumeros.substring(0, 2)).append("/")
                         if (tempFechaNumeros.length >= 4) append(tempFechaNumeros.substring(2, 4)).append("/")
                         if (tempFechaNumeros.length > 4) append(tempFechaNumeros.substring(4))
-                    }.removeSuffix("/") // Remueve barras sobrantes si está incompleta
-
+                    }.removeSuffix("/")
                     val data = mapOf(
                         "nombre" to tempNombre,
                         "apellido" to tempApellido,
@@ -158,15 +152,14 @@ fun DialogoEditarPerfil(
     )
 }
 
-// --- DIÁLOGO: PERMISOS DE LA APP ---
 @Composable
 fun DialogoPermisosApp(
     permisoConcedidoEstado: Boolean,
     permisoNotifConcedidoEstado: Boolean,
-    permisoCamaraConcedidoEstado: Boolean, // 🆕 Estado dinámico de la cámara
+    permisoCamaraConcedidoEstado: Boolean,
     solicitarMultimedia: () -> Unit,
     solicitarNotificaciones: () -> Unit,
-    solicitarCamara: () -> Unit,           // 🆕 Callback para pedir permiso de cámara
+    solicitarCamara: () -> Unit,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
@@ -176,7 +169,6 @@ fun DialogoPermisosApp(
             Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(text = "Para asegurar la total funcionalidad de la Agenda, gestiona los accesos del sistema desde aquí:", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(bottom = 4.dp))
 
-                // Tarjeta 1: Acceso Multimedia
                 Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))) {
                     Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                         Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
@@ -195,7 +187,6 @@ fun DialogoPermisosApp(
                     }
                 }
 
-                // Tarjeta 2: Notificaciones
                 Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))) {
                     Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                         Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
@@ -214,7 +205,6 @@ fun DialogoPermisosApp(
                     }
                 }
 
-                // Tarjeta 3: Cámara (Añadida para el nuevo lector de documentos)
                 Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))) {
                     Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                         Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
@@ -238,7 +228,6 @@ fun DialogoPermisosApp(
     )
 }
 
-// --- DIÁLOGO: SEGURIDAD ---
 @Composable
 fun DialogoSeguridadApp(
     correoUsuario: String,
@@ -278,7 +267,6 @@ fun DialogoSeguridadApp(
     )
 }
 
-// --- DIÁLOGO: PERSONALIZACIÓN ---
 @Composable
 fun DialogoPersonalizacionApp(
     modoOscuroActivo: Boolean,
@@ -328,9 +316,6 @@ fun DialogoPersonalizacionApp(
     )
 }
 
-// =========================================================
-// 🎭 MÁSCARA AUTOMÁTICA PARA ENTRADA DE FECHAS (DD/MM/AAAA)
-// =========================================================
 class MascaraFechaTransformation : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
         val inputOriginal = text.text
