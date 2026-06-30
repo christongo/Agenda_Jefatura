@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "342977426699",
+    "firebase_url": "https://agendaappxd-default-rtdb.firebaseio.com",
+    "project_id": "agendaappxd",
+    "storage_bucket": "agendaappxd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:342977426699:android:f0e0cbf74262ef777b1e0e",
+        "android_client_info": {
+          "package_name": "com.agendaapppractica.agendaappxd"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "342977426699-d9uak4tovu00mvot8qbur68vh6qb01e5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYZdkXmLd5yV3kUB8n4b4koSZfUmRkEhU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "342977426699-d9uak4tovu00mvot8qbur68vh6qb01e5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
