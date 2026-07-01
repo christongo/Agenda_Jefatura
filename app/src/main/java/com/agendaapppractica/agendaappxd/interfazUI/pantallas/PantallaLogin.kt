@@ -1,5 +1,8 @@
 package com.agendaapppractica.agendaappxd.interfazUI.pantallas
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.compose.animation.*
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -27,6 +30,12 @@ import com.agendaapppractica.agendaappxd.networkData.AutenticacionManager
 import com.agendaapppractica.agendaappxd.networkData.GoogleAuthHelper
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
+
+private fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
@@ -232,11 +241,21 @@ fun PantallaLogin(
             OutlinedButton(
                 onClick = {
                     mensaje = ""
+                    val actividadReal = context.findActivity()
+
+                    if (actividadReal == null) {
+                        esMensajeExito = false
+                        mensaje = "Error: Ventana de la app no lista."
+                        return@OutlinedButton
+                    }
+
                     cargando = true
                     coroutineScope.launch {
-                        val webClientId = "TU_ID_DE_CLIENTE_WEB.apps.googleusercontent.com"
-                        val exito = GoogleAuthHelper.iniciarSesionConGoogle(context, webClientId)
+                        val webClientId = "342977426699-d9uak4tovu00mvot8qbur68vh6qb01e5.apps.googleusercontent.com"
+
+                        val exito = GoogleAuthHelper.iniciarSesionConGoogle(actividadReal, webClientId)
                         cargando = false
+
                         if (exito) {
                             AutenticacionManager.sesionComoInvitadoLocal = false
                             onLoginSuccess()

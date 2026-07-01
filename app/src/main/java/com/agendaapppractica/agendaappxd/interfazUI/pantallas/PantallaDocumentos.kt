@@ -35,7 +35,7 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import java.io.File
 import java.net.URLEncoder
 
-fun Context.findActivity(): ComponentActivity? {
+private fun Context.findActivity(): ComponentActivity? {
     var currentContext = this
     while (currentContext is ContextWrapper) {
         if (currentContext is ComponentActivity) {

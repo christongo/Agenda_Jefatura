@@ -1,6 +1,7 @@
 package com.agendaapppractica.agendaappxd.interfazUI.modales
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -18,6 +19,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.agendaapppractica.agendaappxd.model.FeriadoChile
 import com.agendaapppractica.agendaappxd.model.Tarea
@@ -146,6 +148,14 @@ fun CalendarioChile(
                     modifier = Modifier
                         .padding(3.dp)
                         .size(46.dp)
+                        // DETALLE: Añadimos un borde rojo llamativo si el día tiene tareas guardadas y no está seleccionado
+                        .then(
+                            if (tieneEvento && !seleccionado) {
+                                Modifier.border(2.dp, Color(0xFFD32F2F), CircleShape)
+                            } else {
+                                Modifier
+                            }
+                        )
                         .background(
                             when {
                                 seleccionado -> MaterialTheme.colorScheme.primary
@@ -168,7 +178,8 @@ fun CalendarioChile(
                                 esDiaPasado -> Color.Gray.copy(alpha = 0.5f)
                                 esFeriado -> Color(0xB7B71C1C)
                                 else -> MaterialTheme.colorScheme.onSurface
-                            }
+                            },
+                            fontWeight = if (tieneEvento) FontWeight.Bold else FontWeight.Normal
                         )
 
                         if (tieneEvento) {
@@ -177,7 +188,8 @@ fun CalendarioChile(
                                 modifier = Modifier
                                     .size(6.dp)
                                     .background(
-                                        if (seleccionado) MaterialTheme.colorScheme.onPrimary else Color.Blue,
+                                        // DETALLE: Cambiamos el color del punto inferior de azul a Rojo/Blanco para perfecta visibilidad
+                                        if (seleccionado) MaterialTheme.colorScheme.onPrimary else Color(0xFFD32F2F),
                                         CircleShape
                                     )
                             )
