@@ -98,7 +98,6 @@ fun PantallaDocumentos(navController: NavController) {
     var nuevoNombreTexto by remember { mutableStateOf("") }
     var mostrarDialogRenombrar by remember { mutableStateOf(false) }
 
-    // --- Control de Persistencia y Estado del Tutorial ---
     val prefs = remember { context.getSharedPreferences("DocumentosTutorialPrefs", Context.MODE_PRIVATE) }
     var mostrarTutorial by remember { mutableStateOf(false) }
 
@@ -391,6 +390,7 @@ fun PantallaDocumentos(navController: NavController) {
     }
 }
 
+// === COMPONENTE DEL TUTORIAL POR PASOS ===
 
 @Composable
 fun DialogoTutorialDocumentos(
@@ -574,4 +574,123 @@ fun DialogoTutorialDocumentos(
 
 @Composable
 fun VisorPdfInternoDialog(archivo: File, onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    var paginaActual by remember { mutableStateOf(0) }
+    var totalPaginas by remember { mutableStateOf(0) }
+    var bitmapPagina by remember { mutableStateOf<Bitmap?>(null) }
+
+    LaunchedEffect(archivo, paginaActual) {
+        try {
+            val parcelFileDescriptor = ParcelFileDescriptor.open(archivo, ParcelFileDescriptor.MODE_READ_ONLY)
+            val pdfRenderer = PdfRenderer(parcelFileDescriptor)
+            totalPaginas = pdfRenderer.pageCount
+
+            if (totalPaginas > 0) {
+                val pagina = pdfRenderer.openPage(paginaActual)
+
+                val bitmap = Bitmap.createBitmap(pagina.width * 2, pagina.height * 2, Bitmap.Config.ARGB_8888)
+                pagina.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                bitmapPagina = bitmap
+
+                pagina.close()
+            }
+            pdfRenderer.close()
+            parcelFileDescriptor.close()
+        } catch (e: Exception) {
+            Toast.makeText(context, "Error al procesar renderizado de página", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false) // Permite pantalla completa ocupando los márgenes correctos
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Default.Close, contentDescription = "Cerrar Visor")
+                    }
+                    Text(
+                        text = archivo.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        modifier = Modifier.weight(1f).padding(horizontal = 12.dp)
+                    )
+                    Text(
+                        text = "${paginaActual + 1} / $totalPaginas",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (bitmapPagina != null) {
+                        AndroidView(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            factory = { ctx ->
+                                ImageView(ctx).apply {
+                                    adjustViewBounds = true
+                                    scaleType = ImageView.ScaleType.FIT_CENTER
+                                }
+                            },
+                            update = { imageView ->
+                                imageView.setImageBitmap(bitmapPagina)
+                            }
+                        )
+                    } else {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(
+                        onClick = { if (paginaActual > 0) paginaActual-- },
+                        enabled = paginaActual > 0
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.NavigateBefore, contentDescription = null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Anterior")
+                    }
+
+                    TextButton(
+                        onClick = { if (paginaActual < totalPaginas - 1) paginaActual++ },
+                        enabled = paginaActual < totalPaginas - 1
+                    ) {
+                        Text("Siguiente")
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(Icons.AutoMirrored.Filled.NavigateNext, contentDescription = null)
+                    }
+                }
+            }
+        }
+    }
 }
