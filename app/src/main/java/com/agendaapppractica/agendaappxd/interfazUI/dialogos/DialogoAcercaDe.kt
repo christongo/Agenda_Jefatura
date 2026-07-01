@@ -1,5 +1,3 @@
-package com.agendaapppractica.agendaappxd.interfazUI.dialogos
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -18,7 +16,6 @@ import com.agendaapppractica.agendaappxd.BuildConfig
 fun DialogoAcercaDe(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(28.dp),
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = Icons.Default.Build, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
