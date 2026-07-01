@@ -1,8 +1,13 @@
 package com.agendaapppractica.agendaappxd.interfazUI.pantallas
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -29,6 +34,17 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import java.io.File
 import java.net.URLEncoder
+
+fun Context.findActivity(): ComponentActivity? {
+    var currentContext = this
+    while (currentContext is ContextWrapper) {
+        if (currentContext is ComponentActivity) {
+            return currentContext
+        }
+        currentContext = currentContext.baseContext
+    }
+    return null
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,7 +75,7 @@ fun PantallaDocumentos(navController: NavController) {
     val scannerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult()
     ) { resultado ->
-        if (resultado.resultCode == AppCompatActivity.RESULT_OK) {
+        if (resultado.resultCode == Activity.RESULT_OK) {
             val scanResult = GmsDocumentScanningResult.fromActivityResultIntent(resultado.data)
             scanResult?.pdf?.let { pdf ->
                 val directorioDestino = context.getExternalFilesDir(null)
@@ -91,7 +107,7 @@ fun PantallaDocumentos(navController: NavController) {
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = {
-                    val actividad = context as? AppCompatActivity
+                    val actividad = context.findActivity()
                     if (actividad != null) {
                         escaner.getStartScanIntent(actividad)
                             .addOnSuccessListener { intentSender ->
@@ -101,7 +117,7 @@ fun PantallaDocumentos(navController: NavController) {
                                 Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                             }
                     } else {
-                        Toast.makeText(context, "Error: El contexto no es válido.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Error: El contexto no contiene una Activity válida.", Toast.LENGTH_SHORT).show()
                     }
                 },
                 icon = { Icon(Icons.Default.DocumentScanner, null) },

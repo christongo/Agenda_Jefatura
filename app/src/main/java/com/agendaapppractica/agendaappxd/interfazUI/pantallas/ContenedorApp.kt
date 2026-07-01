@@ -84,7 +84,7 @@ fun ContenedorApp(
                             sharedPref.edit().putBoolean("darkMode", nuevoModo).apply()
                         },
                         colorTemaActual = colorTema,
-                        onColorTemaCambiado = { nuevoColor ->
+                        onColorTemaCambiChanged = { nuevoColor ->
                             onColorTemaChange(nuevoColor)
                             sharedPref.edit().putString("colorTema", nuevoColor).apply()
                         },

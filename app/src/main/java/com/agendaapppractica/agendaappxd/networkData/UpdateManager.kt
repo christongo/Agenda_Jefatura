@@ -19,27 +19,33 @@ import java.net.URL
 
 object UpdateManager {
 
-    private const val URL_VERSION_JSON = "https://tu-servidor.com/update.json"
+    private const val GITHUB_API_URL = "https://api.github.com/repos/christongo/Agenda_appV1.1.1/releases/latest"
 
     class UpdateInfo(val urlApk: String, val versionCode: Int, val versionName: String)
 
     suspend fun verificarActualizacion(): UpdateInfo? = withContext(Dispatchers.IO) {
         try {
-            val url = URL(URL_VERSION_JSON)
+            val url = URL(GITHUB_API_URL)
             val conexion = url.openConnection() as HttpURLConnection
             conexion.requestMethod = "GET"
             conexion.connectTimeout = 5000
+            conexion.setRequestProperty("Accept", "application/vnd.github.v3+json")
 
             if (conexion.responseCode == HttpURLConnection.HTTP_OK) {
                 val jsonString = conexion.inputStream.bufferedReader().use { it.readText() }
                 val json = JSONObject(jsonString)
 
-                val latestVersionCode = json.getInt("versionCode")
-                val latestVersionName = json.getString("versionName")
-                val apkUrl = json.getString("apkUrl")
+                val latestVersionName = json.getString("tag_name").replace("v", "")
+                val assets = json.getJSONArray("assets")
 
-                if (latestVersionCode > BuildConfig.VERSION_CODE) {
-                    return@withContext UpdateInfo(apkUrl, latestVersionCode, latestVersionName)
+                if (assets.length() > 0) {
+                    val firstAsset = assets.getJSONObject(0)
+                    val apkUrl = firstAsset.getString("browser_download_url")
+
+                    val currentVersionName = BuildConfig.VERSION_NAME
+                    if (latestVersionName != currentVersionName) {
+                        return@withContext UpdateInfo(apkUrl, BuildConfig.VERSION_CODE + 1, latestVersionName)
+                    }
                 }
             }
         } catch (e: Exception) {

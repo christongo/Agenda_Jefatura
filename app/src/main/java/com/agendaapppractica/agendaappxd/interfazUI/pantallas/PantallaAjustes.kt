@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
+import com.agendaapppractica.agendaappxd.BuildConfig
 import com.agendaapppractica.agendaappxd.interfazUI.dialogos.DialogoEditarPerfil
 import com.agendaapppractica.agendaappxd.interfazUI.dialogos.DialogoPermisosApp
 import com.agendaapppractica.agendaappxd.interfazUI.dialogos.DialogoSeguridadApp
@@ -68,7 +69,7 @@ fun PantallaAjustes(
     modoOscuroActivo: Boolean,
     onModoOscuroCambiado: (Boolean) -> Unit,
     colorTemaActual: String,
-    onColorTemaCambiado: (String) -> Unit,
+    onColorTemaCambiChanged: (String) -> Unit,
     tipoTexturaActual: String,
     onTipoTexturaCambiado: (String) -> Unit,
     grosorLineaActual: Float = 1f,
@@ -91,10 +92,10 @@ fun PantallaAjustes(
     var mostrarDialogoSeguridad by remember { mutableStateOf(false) }
     var mostrarDialogoPersonalizacion by remember { mutableStateOf(false) }
     var mostrarDialogoPermisos by remember { mutableStateOf(false) }
+    var mostrarDialogoAcercaDe by remember { mutableStateOf(false) }
 
     var permisoConcedidoEstado by remember { mutableStateOf(tienePermisoMultimedia(context)) }
     var permisoNotifConcedidoEstado by remember { mutableStateOf(tienePermisoNotificaciones(context)) }
-    // 🆕 Estado local del permiso de cámara
     var permisoCamaraConcedidoEstado by remember { mutableStateOf(tienePermisoCamara(context)) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -128,7 +129,6 @@ fun PantallaAjustes(
             Toast.makeText(context, "Alertas desactivadas.", Toast.LENGTH_LONG).show()
         }
     }
-
 
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -232,7 +232,7 @@ fun PantallaAjustes(
                 Icon(imageVector = Icons.Default.Lock, contentDescription = null)
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Seguridad", style = MaterialTheme.typography.titleMedium)
+                    Text(text = "Security", style = MaterialTheme.typography.titleMedium)
                     Text(text = "Cambiar contraseña", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                 }
                 Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -260,6 +260,20 @@ fun PantallaAjustes(
                 Icon(imageVector = Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(text = "Permisos de la app", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, modifier = Modifier.size(16.dp))
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Card(modifier = Modifier.fillMaxWidth().clickable { mostrarDialogoAcercaDe = true }, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(imageVector = Icons.Default.Android, contentDescription = null, tint = Color(0xFF3DDC84))
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = "Información de la app", style = MaterialTheme.typography.titleMedium)
+                    Text(text = "Versión del sistema, soporte y detalles", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                }
                 Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, modifier = Modifier.size(16.dp))
             }
         }
@@ -296,6 +310,31 @@ fun PantallaAjustes(
         DialogoSeguridadApp(correoUsuario = correoUsuario, onDismiss = { mostrarDialogoSeguridad = false })
     }
 
+    if (mostrarDialogoAcercaDe) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoAcercaDe = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(imageVector = Icons.Default.Build, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("Acerca de esta App", fontWeight = FontWeight.Bold)
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(text = "Agenda Jefatura", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary)
+                    Text(text = "Versión instalada: v${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.bodyLarge)
+                    Text(text = "Código de compilación: ${BuildConfig.VERSION_CODE}", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    Text(text = "Desarrollado para la optimización y gestión de tareas de jefatura de forma práctica.", style = MaterialTheme.typography.bodyMedium)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { mostrarDialogoAcercaDe = false }) { Text("Cerrar") }
+            }
+        )
+    }
+
     if (mostrarDialogoPersonalizacion) {
         AlertDialog(
             onDismissRequest = { mostrarDialogoPersonalizacion = false },
@@ -327,7 +366,7 @@ fun PantallaAjustes(
                                     .size(36.dp)
                                     .clip(CircleShape)
                                     .background(colorReal)
-                                    .clickable { onColorTemaCambiado(nombre) }
+                                    .clickable { onColorTemaCambiChanged(nombre) }
                             ) {
                                 if (colorTemaActual == nombre) {
                                     Icon(Icons.Default.Check, null, tint = Color.White, modifier = Modifier.align(Alignment.Center).size(18.dp))
