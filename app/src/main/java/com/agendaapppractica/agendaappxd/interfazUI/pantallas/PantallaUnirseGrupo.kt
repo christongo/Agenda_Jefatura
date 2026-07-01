@@ -73,11 +73,16 @@ fun PantallaUnirseGrupo(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Modificado: Ahora valida límites estrictos de 6 caracteres alfanuméricos en mayúsculas
             OutlinedTextField(
                 value = codigoGroup,
-                onValueChange = { codigoGroup = it },
+                onValueChange = { input ->
+                    if (input.length <= 6) {
+                        codigoGroup = input.filter { it.isLetterOrDigit() }.uppercase()
+                    }
+                },
                 label = { Text("Código del Grupo") },
-                placeholder = { Text("Ej: 123456") },
+                placeholder = { Text("Ej: XY782B") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !cargando,

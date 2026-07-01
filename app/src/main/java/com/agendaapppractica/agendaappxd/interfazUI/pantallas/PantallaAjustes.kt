@@ -57,7 +57,10 @@ fun PantallaAjustes(
     var nombreUsuario by remember { mutableStateOf(usuarioActual?.displayName ?: "Usuario") }
     var apellidoUsuario by remember { mutableStateOf("") }
     var telefonoUsuario by remember { mutableStateOf("") }
-    var fotoPerfilUri by remember { mutableStateOf<Uri?>(null) }
+    var fechaNacimientoUsuario by remember { mutableStateOf("") } // 🛠️ Añadido estado para la fecha
+
+    // Cambiado a Any? para admitir de manera ultra rápida tanto Uris locales como URLs de la red
+    var fotoPerfilUri by remember { mutableStateOf<Any?>(null) }
 
     var dPerfil by remember { mutableStateOf(false) }
     var dSeguridad by remember { mutableStateOf(false) }
@@ -118,7 +121,13 @@ fun PantallaAjustes(
         if (concedido) tienePermisoAlmacenamiento = true else abrirConfiguracionSistema()
     }
 
-    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { if (it != null) fotoPerfilUri = it }
+    // 🛠️ Al elegir la foto, se asigna al estado local al instante (Pinta la UI sin esperar a Firebase)
+    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            fotoPerfilUri = uri
+        }
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { if (it) galleryLauncher.launch("image/*") }
 
     LaunchedEffect(usuarioActual?.uid) {
@@ -128,7 +137,13 @@ fun PantallaAjustes(
                     nombreUsuario = doc.getString("nombre") ?: "Usuario"
                     apellidoUsuario = doc.getString("apellido") ?: ""
                     telefonoUsuario = doc.getString("telefono") ?: ""
-                    doc.getString("fotoPerfilUrl")?.let { if (it.isNotEmpty()) fotoPerfilUri = Uri.parse(it) }
+                    fechaNacimientoUsuario = doc.getString("fechaNacimiento") ?: "" // 🛠️ Sincronizar fecha de la nube
+
+                    doc.getString("fotoPerfilUrl")?.let {
+                        if (it.isNotEmpty() && fotoPerfilUri == null) {
+                            fotoPerfilUri = Uri.parse(it)
+                        }
+                    }
                 }
             }
         }
@@ -180,9 +195,9 @@ fun PantallaAjustes(
             nombreActual = nombreUsuario,
             apellidoActual = apellidoUsuario,
             telefonoActual = telefonoUsuario,
-            fechaActual = "",
+            fechaActual = fechaNacimientoUsuario, // 🛠️ Pasando la fecha correcta al diálogo
             correoUsuario = usuarioActual?.email ?: "",
-            fotoPerfilUri = fotoPerfilUri,
+            fotoPerfilUri = if (fotoPerfilUri is Uri) fotoPerfilUri as Uri else null,
             intentarCambiarFoto = {
                 permissionLauncher.launch(
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_IMAGES
@@ -190,10 +205,11 @@ fun PantallaAjustes(
                 )
             },
             onDismiss = { dPerfil = false },
-            onGuardarExitoso = { n: String, a: String, t: String, _: String ->
+            onGuardarExitoso = { n: String, a: String, t: String, f: String ->
                 nombreUsuario = n
                 apellidoUsuario = a
                 telefonoUsuario = t
+                fechaNacimientoUsuario = f // 🛠️ Guardar la nueva fecha en el estado local
                 dPerfil = false
             }
         )

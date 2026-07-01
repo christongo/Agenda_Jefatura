@@ -49,13 +49,12 @@ fun SeccionDetalles(
     listaSolicitudes: List<MiembroUsuario>,
     cargandoSolicitudes: Boolean,
     onSolicitudProcesada: (String, Boolean) -> Unit,
-    onFotoCambiada: (Uri) -> Unit // 🛠️ NUEVO: Callback para procesar la nueva imagen seleccionada
+    onFotoCambiada: (Uri) -> Unit
 ) {
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
     var codigoVisible by remember { mutableStateOf(false) }
 
-    // 🛠️ Selector de imágenes de la galería del dispositivo Android
     val galeriaLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -74,7 +73,6 @@ fun SeccionDetalles(
                 modifier = Modifier.size(100.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                // 🛠️ Muestra la imagen remota si existe en el modelo, si no, usa la inicial
                 if (!grupo.fotoGrupo.isNullOrBlank()) {
                     AsyncImage(
                         model = grupo.fotoGrupo,
@@ -91,10 +89,9 @@ fun SeccionDetalles(
                 }
             }
 
-            // Permitir cambiar la foto solo si es el creador o administrador
             if (esCreador) {
                 IconButton(
-                    onClick = { galeriaLauncher.launch("image/*") }, // 🛠️ Abre la galería directamente
+                    onClick = { galeriaLauncher.launch("image/*") },
                     modifier = Modifier.size(32.dp).background(MaterialTheme.colorScheme.primary, CircleShape)
                 ) {
                     Icon(
@@ -126,7 +123,8 @@ fun SeccionDetalles(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text("Código de acceso", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline)
-                        Text(text = if (codigoVisible) grupo.id else "••••••••••••", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                        // Modificado para mostrar solo 6 puntos fijos cuando está oculto
+                        Text(text = if (codigoVisible) grupo.id else "••••••", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
                     }
                 }
                 Row {
@@ -216,7 +214,6 @@ fun SeccionDetalles(
         }
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

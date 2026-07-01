@@ -40,8 +40,9 @@ fun PantallaCrearNota(
     var tituloNota by remember { mutableStateOf("") }
     var contenidoNota by remember { mutableStateOf("") }
     var guardandoNota by remember { mutableStateOf(false) }
-
     var cargandoNota by remember { mutableStateOf(notaId != null && notaId != "nueva") }
+
+    var yaGuardadoManualmente by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
     val lineaColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
@@ -62,13 +63,31 @@ fun PantallaCrearNota(
         }
     }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            if (!yaGuardadoManualmente && (tituloNota.isNotBlank() || contenidoNota.isNotBlank()) && usuarioActual != null) {
+                val datosNota = hashMapOf(
+                    "titulo" to tituloNota.ifBlank { "Nota sin título" },
+                    "contenido" to contenidoNota,
+                    "usuarioId" to usuarioActual.uid
+                )
+
+                if (notaId != null && notaId != "nueva") {
+                    db.collection("notas").document(notaId).set(datosNota)
+                } else {
+                    db.collection("notas").add(datosNota)
+                }
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(if (notaId != null && notaId != "nueva") "Editar Nota" else "Nueva Nota", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }, enabled = !guardandoNota) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Cancelar")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                     }
                 },
                 actions = {
@@ -76,6 +95,7 @@ fun PantallaCrearNota(
                         onClick = {
                             if ((tituloNota.isNotBlank() || contenidoNota.isNotBlank()) && !guardandoNota && usuarioActual != null) {
                                 guardandoNota = true
+                                yaGuardadoManualmente = true
 
                                 val datosNota = hashMapOf(
                                     "titulo" to tituloNota.ifBlank { "Sin título" },
@@ -99,6 +119,7 @@ fun PantallaCrearNota(
                                     }
                                     .addOnFailureListener {
                                         guardandoNota = false
+                                        yaGuardadoManualmente = false
                                         Toast.makeText(context, "Error al guardar en la nube", Toast.LENGTH_SHORT).show()
                                     }
                             }
