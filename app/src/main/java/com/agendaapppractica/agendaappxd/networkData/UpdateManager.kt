@@ -35,14 +35,15 @@ object UpdateManager {
                 val jsonString = conexion.inputStream.bufferedReader().use { it.readText() }
                 val json = JSONObject(jsonString)
 
-                val latestVersionName = json.getString("tag_name").replace("v", "")
+                val latestVersionName = json.getString("tag_name").trim().replace("v", "", ignoreCase = true)
                 val assets = json.getJSONArray("assets")
 
                 if (assets.length() > 0) {
                     val firstAsset = assets.getJSONObject(0)
                     val apkUrl = firstAsset.getString("browser_download_url")
 
-                    val currentVersionName = BuildConfig.VERSION_NAME
+                    val currentVersionName = BuildConfig.VERSION_NAME.trim().replace("v", "", ignoreCase = true)
+
                     if (latestVersionName != currentVersionName) {
                         return@withContext UpdateInfo(apkUrl, BuildConfig.VERSION_CODE + 1, latestVersionName)
                     }

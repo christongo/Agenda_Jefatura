@@ -86,7 +86,7 @@ fun ModalProgramarHorario(
                 }
 
                 if (!esPeriodoValido) {
-                    Text("⚠️ El término debe ocurrir después del inicio", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    Text("El término debe ocurrir después del inicio", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                 }
             }
         },

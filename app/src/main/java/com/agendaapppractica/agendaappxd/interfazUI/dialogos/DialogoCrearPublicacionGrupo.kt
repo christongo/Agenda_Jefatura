@@ -41,12 +41,16 @@ fun DialogoCrearPublicacionGrupo(
     var tituloPublicacion by remember { mutableStateOf("") }
     var descripcionPublicacion by remember { mutableStateOf("") }
 
+    // 🛠️ MODIFICACIÓN: Lista limpia para el entorno de una empresa (sin clases/tareas)
     val opcionesSubtipo = if (tipoPublicacion == "Anuncio") {
         listOf("Aviso", "Alerta", "Recordatorio", "Informativo")
     } else {
-        listOf("Examen", "Tarea", "Reunión", "Clase", "Otro")
+        listOf("Reunión", "Proyecto", "Capacitación", "Otro")
     }
     var subtipoSeleccionado by remember { mutableStateOf(opcionesSubtipo.first()) }
+
+    // 🛠️ NUEVO: Estado para capturar la especificación de "Otro"
+    var especificacionOtro by remember { mutableStateOf("") }
 
     var fechaInicio by remember { mutableStateOf(LocalDate.now()) }
     var fechaFin by remember { mutableStateOf(LocalDate.now()) }
@@ -79,9 +83,14 @@ fun DialogoCrearPublicacionGrupo(
         } catch (_: Exception) { false }
     }
 
-    val esFormularioValido = remember(tituloPublicacion, esPeriodoValido) {
-        tituloPublicacion.isNotBlank() && esPeriodoValido
+    // 🛠️ MODIFICACIÓN: Si es "Otro", el formulario pide obligatoriamente especificar qué es
+    val esFormularioValido = remember(tituloPublicacion, esPeriodoValido, subtipoSeleccionado, especificacionOtro) {
+        val condicionSubtipo = if (subtipoSeleccionado == "Otro") especificacionOtro.isNotBlank() else true
+        tituloPublicacion.isNotBlank() && esPeriodoValido && condicionSubtipo
     }
+
+    // 🛠️ NUEVO: Determina la etiqueta final que se enviará a Firebase
+    val subtipoFinal = if (subtipoSeleccionado == "Otro") especificacionOtro.trim() else subtipoSeleccionado
 
     val firestore = remember { FirestoreManager() }
 
@@ -166,10 +175,23 @@ fun DialogoCrearPublicacionGrupo(
                         Icon(Icons.Default.BookmarkBorder, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(24.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(if (tipoPublicacion == "Anuncio") "Tipo de Aviso" else "Categoría del Evento", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(subtipoSeleccionado, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onSurface)
+                            Text(subtipoFinal, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onSurface)
                         }
                         Icon(Icons.Default.ArrowDropDown, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
+                }
+
+                // 🛠️ NUEVO: Input dinámico que aparece únicamente si se elige "Otro"
+                if (subtipoSeleccionado == "Otro") {
+                    OutlinedTextField(
+                        value = especificacionOtro,
+                        onValueChange = { especificacionOtro = it },
+                        label = { Text("Especifique qué tipo de evento es") },
+                        placeholder = { Text("Ej: Auditoría, Evento Social, etc.") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
                 }
 
                 ElevatedCard(
@@ -204,12 +226,12 @@ fun DialogoCrearPublicacionGrupo(
             Button(
                 onClick = {
                     if (esFormularioValido) {
-                        if (tipoPublicacion == "Anuncio" && listOf("Alerta", "Aviso").contains(subtipoSeleccionado)) {
+                        if (tipoPublicacion == "Anuncio" && listOf("Alerta", "Aviso").contains(subtipoFinal)) {
                             mostrarConfirmarAnuncioPrioritario = true
                         } else {
                             firestore.crearEventoGrupo(
                                 grupoId = grupoId,
-                                titulo = "[$subtipoSeleccionado] $tituloPublicacion",
+                                titulo = "[$subtipoFinal] $tituloPublicacion",
                                 fecha = fechaInicio.format(formatoFechaApp),
                                 hora = horaInicioTexto,
                                 fechaFin = fechaFin.format(formatoFechaApp),
@@ -307,7 +329,6 @@ fun DialogoCrearPublicacionGrupo(
         }
     }
 
-
     if (showTimePickerInicio) {
         Dialog(onDismissRequest = { showTimePickerInicio = false }) {
             Card(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
@@ -337,11 +358,11 @@ fun DialogoCrearPublicacionGrupo(
             onDismissRequest = { mostrarConfirmarAnuncioPrioritario = false },
             icon = { Icon(Icons.Default.Campaign, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(36.dp)) },
             title = { Text("¿Notificar de forma urgente?", fontWeight = FontWeight.Bold) },
-            text = { Text("Estás publicando un aviso de tipo [$subtipoSeleccionado]. ¿Deseas emitir notificaciones directas inmediatas a todos los integrantes de este grupo?") },
+            text = { Text("Estás publicando un aviso de tipo [$subtipoFinal]. ¿Deseas emitir notificaciones directas inmediatas a todos los integrantes de este grupo?") },
             confirmButton = {
                 Button(onClick = {
                     mostrarConfirmarAnuncioPrioritario = false
-                    firestore.crearEventoGrupo(grupoId, "[$subtipoSeleccionado] $tituloPublicacion", fechaInicio.format(formatoFechaApp), horaInicioTexto, fechaFin.format(formatoFechaApp), horaFinTexto, tipoPublicacion)
+                    firestore.crearEventoGrupo(grupoId, "[$subtipoFinal] $tituloPublicacion", fechaInicio.format(formatoFechaApp), horaInicioTexto, fechaFin.format(formatoFechaApp), horaFinTexto, tipoPublicacion)
                     Toast.makeText(context, "¡Publicado con notificación forzada!", Toast.LENGTH_SHORT).show()
                     onDismiss()
                 }) {
@@ -353,7 +374,7 @@ fun DialogoCrearPublicacionGrupo(
             dismissButton = {
                 TextButton(onClick = {
                     mostrarConfirmarAnuncioPrioritario = false
-                    firestore.crearEventoGrupo(grupoId, "[$subtipoSeleccionado] $tituloPublicacion", fechaInicio.format(formatoFechaApp), horaInicioTexto, fechaFin.format(formatoFechaApp), horaFinTexto, tipoPublicacion)
+                    firestore.crearEventoGrupo(grupoId, "[$subtipoFinal] $tituloPublicacion", fechaInicio.format(formatoFechaApp), horaInicioTexto, fechaFin.format(formatoFechaApp), horaFinTexto, tipoPublicacion)
                     Toast.makeText(context, "Guardado en el feed silenciosamente", Toast.LENGTH_SHORT).show()
                     onDismiss()
                 }) { Text("Solo publicar silenciosamente", color = MaterialTheme.colorScheme.onSurfaceVariant) }

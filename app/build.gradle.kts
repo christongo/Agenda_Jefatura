@@ -13,8 +13,10 @@ android {
         applicationId = "com.agendaapppractica.agendaappxd"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+
+        // Actualizado para el cambio de versión
+        versionCode = 2
+        versionName = "1.1.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -40,13 +42,12 @@ android {
 
     buildFeatures {
         compose = true
-        // 🛠️ ¡AQUÍ ESTÁ LA MAGIA! Activamos la generación automática del archivo BuildConfig
+        // Genera la clase para leer v1.1.5 en el diálogo Acerca De
         buildConfig = true
     }
 }
 
 dependencies {
-
     // AndroidX
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -67,10 +68,14 @@ dependencies {
     implementation(libs.google.firebase.auth)
     implementation(libs.google.firebase.firestore)
 
+    // Calendario Kizitonwose
     implementation("com.kizitonwose.calendar:compose:2.7.0")
 
+    // Red y JSON
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -90,7 +95,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation("androidx.compose.material:material-icons-extended")
 
-    //  Pa escanear pdf y documentos (Versión corregida y estable de Google)
+    // Pa escanear pdf y documentos (Versión de Google)
     implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0")
 
     // WorkManager

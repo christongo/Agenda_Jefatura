@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
+import com.agendaapppractica.agendaappxd.model.Grupo
 import com.agendaapppractica.agendaappxd.networkData.UpdateManager
 import com.agendaapppractica.agendaappxd.ui.theme.AgendaappxdTheme
 import kotlinx.coroutines.launch
@@ -72,8 +73,15 @@ fun ContenedorApp(
     AgendaappxdTheme(darkTheme = darkTheme, colorTema = colorTema) {
         val navController = rememberNavController()
         val drawerState = rememberDrawerState(DrawerValue.Closed)
+        var grupoSeleccionado by remember { mutableStateOf<Grupo?>(null) }
 
-        ModalNavigationDrawer(
+        if (grupoSeleccionado != null) {
+            PantallaDetalleGrupo(
+                grupo = grupoSeleccionado!!,
+                onVolver = { grupoSeleccionado = null }
+            )
+        } else {
+            ModalNavigationDrawer(
             drawerState = drawerState,
             drawerContent = {
                 ModalDrawerSheet {
@@ -170,10 +178,16 @@ fun ContenedorApp(
                     composable("grupos") {
                         PantallaGrupos(
                             onUnirseGrupoClick = { navController.navigate("unirse_grupo") },
-                            onMisGruposClick = { navController.navigate("mis_grupos") }
+                            onMisGruposClick = { navController.navigate("mis_grupos") },
+                            onGrupoClick = { grupo -> grupoSeleccionado = grupo }
                         )
                     }
-                    composable("mis_grupos") { PantallaGruposLista(onVolver = { navController.popBackStack() }) }
+                    composable("mis_grupos") {
+                        PantallaGruposLista(
+                            onVolver = { navController.popBackStack() },
+                            onGrupoSeleccionado = { grupo -> grupoSeleccionado = grupo }
+                        )
+                    }
                     composable("unirse_grupo") { PantallaUnirseGrupo(onVolver = { navController.popBackStack() }) }
                     composable("bloc_notas") {
                         PantallaBlocNotas(
@@ -210,4 +224,5 @@ fun ContenedorApp(
             }
         }
     }
+}
 }

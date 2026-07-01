@@ -1,6 +1,9 @@
 package com.agendaapppractica.agendaappxd.interfazUI.componentes
 
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,11 +29,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.agendaapppractica.agendaappxd.model.Grupo
 import com.agendaapppractica.agendaappxd.model.MiembroUsuario
 import com.agendaapppractica.agendaappxd.model.Tarea
@@ -43,11 +48,22 @@ fun SeccionDetalles(
     esCreador: Boolean,
     listaSolicitudes: List<MiembroUsuario>,
     cargandoSolicitudes: Boolean,
-    onSolicitudProcesada: (String, Boolean) -> Unit
+    onSolicitudProcesada: (String, Boolean) -> Unit,
+    onFotoCambiada: (Uri) -> Unit // 🛠️ NUEVO: Callback para procesar la nueva imagen seleccionada
 ) {
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
     var codigoVisible by remember { mutableStateOf(false) }
+
+    // 🛠️ Selector de imágenes de la galería del dispositivo Android
+    val galeriaLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            onFotoCambiada(it)
+            Toast.makeText(context, "Cargando nueva foto de grupo...", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
@@ -58,13 +74,36 @@ fun SeccionDetalles(
                 modifier = Modifier.size(100.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = nombreActual.take(1).uppercase(), style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                // 🛠️ Muestra la imagen remota si existe en el modelo, si no, usa la inicial
+                if (!grupo.fotoGrupo.isNullOrBlank()) {
+                    AsyncImage(
+                        model = grupo.fotoGrupo,
+                        contentDescription = "Foto del grupo",
+                        modifier = Modifier.fillMaxSize().clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Text(
+                        text = nombreActual.take(1).uppercase(),
+                        style = MaterialTheme.typography.displaySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
             }
-            IconButton(
-                onClick = { Toast.makeText(context, "Próximamente: Cambiar foto", Toast.LENGTH_SHORT).show() },
-                modifier = Modifier.size(32.dp).background(MaterialTheme.colorScheme.primary, CircleShape)
-            ) {
-                Icon(Icons.Default.CameraAlt, contentDescription = "Cambiar Foto", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(16.dp))
+
+            // Permitir cambiar la foto solo si es el creador o administrador
+            if (esCreador) {
+                IconButton(
+                    onClick = { galeriaLauncher.launch("image/*") }, // 🛠️ Abre la galería directamente
+                    modifier = Modifier.size(32.dp).background(MaterialTheme.colorScheme.primary, CircleShape)
+                ) {
+                    Icon(
+                        Icons.Default.CameraAlt,
+                        contentDescription = "Cambiar Foto",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
         }
         Text(text = nombreActual, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
@@ -147,7 +186,6 @@ fun SeccionDetalles(
                                     Text(text = solicitante.correo, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                                 }
                                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-
                                     IconButton(
                                         onClick = { onSolicitudProcesada(solicitante.uid, true) },
                                         modifier = Modifier.background(MaterialTheme.colorScheme.primary, CircleShape).size(32.dp)
@@ -179,82 +217,6 @@ fun SeccionDetalles(
     }
 }
 
-@Composable
-fun SeccionMiembros(cargandoMiembros: Boolean, listaMiembros: List<MiembroUsuario>, grupo: Grupo) {
-    val clipboardManager = LocalClipboardManager.current
-    val context = LocalContext.current
-
-    if (cargandoMiembros) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-    } else {
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxSize()) {
-            items(listaMiembros) { miembro ->
-                val esElCreadorDelGrupo = miembro.uid == grupo.creadorId
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier.size(46.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(text = miembro.nombre.take(1).uppercase(), color = MaterialTheme.colorScheme.onPrimaryContainer)
-                            }
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Column {
-                                Text(text = miembro.nombre, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold))
-                                Text(text = miembro.correo, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                            }
-
-                            Spacer(modifier = Modifier.width(4.dp))
-
-                            IconButton(
-                                onClick = {
-                                    clipboardManager.setText(AnnotatedString(miembro.correo))
-                                    Toast.makeText(context, "Correo copiado: ${miembro.correo}", Toast.LENGTH_SHORT).show()
-                                },
-                                modifier = Modifier.size(28.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.ContentCopy,
-                                    contentDescription = "Copiar Correo",
-                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                                    modifier = Modifier.size(14.dp)
-                                )
-                            }
-                        }
-
-                        val (textoRol, colorContenedor, colorTexto) = when {
-                            esElCreadorDelGrupo -> Triple("Creador", MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer)
-                            else -> Triple("Miembro", MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-
-                        Surface(
-                            color = colorContenedor,
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.padding(start = 4.dp)
-                        ) {
-                            Text(
-                                text = textoRol,
-                                color = colorTexto,
-                                style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                fontWeight = if (esElCreadorDelGrupo) FontWeight.Bold else FontWeight.Normal
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

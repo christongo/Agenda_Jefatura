@@ -27,8 +27,10 @@ class FirestoreManager {
             .addOnFailureListener { e -> Log.e("FIRESTORE", "Error al guardar", e) }
     }
 
-    fun eliminarTarea(tareaId: String) {
+    fun eliminarTarea(tareaId: String, onResultado: (Boolean) -> Unit = {}) {
         db.collection(coleccionEventos).document(tareaId).delete()
+            .addOnSuccessListener { onResultado(true) }
+            .addOnFailureListener { onResultado(false) }
     }
 
     fun actualizarTarea(tarea: Tarea) {
@@ -56,6 +58,19 @@ class FirestoreManager {
             }
     }
 
+    fun escucharSolicitudesGrupo(grupoId: String, callback: (List<String>) -> Unit) {
+        db.collection(coleccionGrupos).document(grupoId)
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.e("FIRESTORE", "Error al escuchar solicitudes", e)
+                    return@addSnapshotListener
+                }
+                @Suppress("UNCHECKED_CAST")
+                val solicitudes = snapshot?.get("solicitudes") as? List<String> ?: emptyList()
+                callback(solicitudes)
+            }
+    }
+
     fun escucharTareasDelDia(fecha: String, misGruposIds: List<String>, callback: (List<Tarea>) -> Unit) {
         val uid = auth.currentUser?.uid ?: return callback(emptyList())
 
@@ -73,6 +88,45 @@ class FirestoreManager {
                         "publico" -> true
                         else -> false
                     }
+                }
+                callback(listaFiltrada)
+            }
+    }
+
+    // ======================================================================
+    // 🛠️ FUNCIÓN OPTIMIZADA INTEGRADA DE FORMA SEGURA
+    // ======================================================================
+    fun escucharTareasDelMes(mesAno: String, misGruposIds: List<String>, callback: (List<Tarea>) -> Unit) {
+        val uid = auth.currentUser?.uid ?: return callback(emptyList())
+
+        // Evita crasheos de Firebase si el usuario aún no tiene grupos mapeados
+        val listaGruposValida = if (misGruposIds.isEmpty()) listOf("") else misGruposIds
+
+        db.collection(coleccionEventos)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.e("FIRESTORE", "Error al escuchar tareas del mes", error)
+                    return@addSnapshotListener
+                }
+
+                if (value == null) {
+                    callback(emptyList())
+                    return@addSnapshotListener
+                }
+
+                val todosLosEventos = value.toObjects(Tarea::class.java)
+
+                val listaFiltrada = todosLosEventos.filter { tarea ->
+                    // Valida que el final de la cadena de fecha coincida con el mes/año actual ("MM/YYYY")
+                    val coincideMes = tarea.fecha.endsWith(mesAno)
+
+                    val tienePermiso = when (tarea.visibilidad) {
+                        "personal" -> tarea.usuarioId == uid
+                        "grupo" -> listaGruposValida.contains(tarea.grupoId)
+                        "publico" -> true
+                        else -> false
+                    }
+                    coincideMes && tienePermiso
                 }
                 callback(listaFiltrada)
             }
