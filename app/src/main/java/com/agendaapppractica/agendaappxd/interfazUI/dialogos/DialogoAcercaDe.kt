@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,6 +33,39 @@ fun DialogoAcercaDe(onDismiss: () -> Unit) {
                 Text(text = "Código de compilación: ${BuildConfig.VERSION_CODE}", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                 Text(text = "Desarrollado para la optimización y gestión de tareas de jefatura de forma práctica.", style = MaterialTheme.typography.bodyMedium)
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // SECCIÓN DE CRÉDITOS CON TU NOMBRE
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Code,
+                            contentDescription = "Créditos",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Column {
+                            Text(
+                                text = "Créditos de Desarrollo",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Diseñado y Desarrollado por Christhoper Novoa Díaz",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
