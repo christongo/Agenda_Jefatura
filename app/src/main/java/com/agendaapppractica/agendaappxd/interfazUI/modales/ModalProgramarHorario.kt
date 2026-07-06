@@ -1,15 +1,9 @@
 package com.agendaapppractica.agendaappxd.interfazUI.modales
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import java.time.LocalDate
@@ -30,77 +24,78 @@ fun ModalProgramarHorario(
     onConfirmar: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val context = LocalContext.current
-
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Programar Horario", fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text("Inicia", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(
-                        onClick = onAbrirCalendarioInicio,
-                        modifier = Modifier.weight(1.3f),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer)
-                    ) {
-                        Icon(Icons.Default.CalendarToday, null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(fechaInicio.format(formatoFechaApp))
-                    }
-                    Button(
-                        onClick = onAbrirTimePickerInicio,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer)
-                    ) {
-                        Icon(Icons.Default.AccessTime, null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(horaInicio)
+                Text(
+                    "Configura el inicio y término del evento:",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Inicio", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            onClick = onAbrirCalendarioInicio,
+                            modifier = Modifier.weight(1f),
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            Text(fechaInicio.format(formatoFechaApp))
+                        }
+                        OutlinedButton(
+                            onClick = onAbrirTimePickerInicio,
+                            modifier = Modifier.weight(0.7f),
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            Text(horaInicio)
+                        }
                     }
                 }
 
-                Text("Termina", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(
-                        onClick = onAbrirCalendarioFin,
-                        modifier = Modifier.weight(1.3f),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer)
-                    ) {
-                        Icon(Icons.Default.CalendarToday, null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(fechaFin.format(formatoFechaApp))
-                    }
-                    Button(
-                        onClick = onAbrirTimePickerFin,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer)
-                    ) {
-                        Icon(Icons.Default.AccessTime, null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(horaFin)
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Término", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            onClick = onAbrirCalendarioFin,
+                            modifier = Modifier.weight(1f),
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            Text(fechaFin.format(formatoFechaApp))
+                        }
+                        OutlinedButton(
+                            onClick = onAbrirTimePickerFin,
+                            modifier = Modifier.weight(0.7f),
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            Text(horaFin)
+                        }
                     }
                 }
 
                 if (!esPeriodoValido) {
-                    Text("El término debe ocurrir después del inicio", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    Surface(
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        shape = MaterialTheme.shapes.small,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "La fecha de término debe ser posterior al inicio.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
                 }
             }
         },
+        confirmButton = {
+            Button(onClick = onConfirmar, enabled = esPeriodoValido) { Text("Aceptar") }
+        },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Cancelar") }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    onConfirmar()
-                    Toast.makeText(context, "Horario guardado", Toast.LENGTH_SHORT).show()
-                },
-                enabled = esPeriodoValido
-            ) { Text("Guardar") }
         }
     )
 }

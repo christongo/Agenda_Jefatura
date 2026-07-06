@@ -187,22 +187,37 @@ class FirestoreManager {
             }
     }
 
-    fun unirseAGrupo(codigoGrupo: String, onResultado: (Boolean) -> Unit) {
-        val uid = auth.currentUser?.uid ?: return onResultado(false)
+    // MODIFICADO: Ahora realiza las validaciones de existencia, duplicación y membresía previa
+    fun unirseAGrupo(codigoGrupo: String, onResultado: (Boolean, String) -> Unit) {
+        val uid = auth.currentUser?.uid ?: return onResultado(false, "No se pudo identificar al usuario.")
         db.collection(coleccionGrupos)
             .whereEqualTo("codigo", codigoGrupo)
             .get()
             .addOnSuccessListener { documentos ->
                 if (!documentos.isEmpty) {
-                    documentos.documents.first().reference.update("solicitudes", FieldValue.arrayUnion(uid))
-                        .addOnSuccessListener { onResultado(true) }
-                        .addOnFailureListener { onResultado(false) }
+                    val doc = documentos.documents.first()
+                    val grupo = doc.toObject(Grupo::class.java)
+
+                    if (grupo != null) {
+                        // Validar si ya es creador, miembro o si ya envió una solicitud previa
+                        if (grupo.creadorId == uid || grupo.miembros.contains(uid)) {
+                            onResultado(false, "Ya eres parte de este grupo.")
+                        } else if (grupo.solicitudes.contains(uid)) {
+                            onResultado(false, "Ya has enviado una solicitud a este grupo.")
+                        } else {
+                            doc.reference.update("solicitudes", FieldValue.arrayUnion(uid))
+                                .addOnSuccessListener { onResultado(true, "Solicitud enviada correctamente.") }
+                                .addOnFailureListener { onResultado(false, "Error al enviar la solicitud.") }
+                        }
+                    } else {
+                        onResultado(false, "El grupo no es válido.")
+                    }
                 } else {
-                    onResultado(false)
+                    onResultado(false, "No se encontró ningún grupo con ese código.")
                 }
             }
             .addOnFailureListener {
-                onResultado(false)
+                onResultado(false, "Error al buscar el grupo.")
             }
     }
 

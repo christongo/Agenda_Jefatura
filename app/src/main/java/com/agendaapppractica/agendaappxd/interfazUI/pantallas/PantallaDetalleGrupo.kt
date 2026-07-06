@@ -113,6 +113,7 @@ fun PantallaDetalleGrupo(
     }
 
     val esCreador = grupo.creadorId == miUid
+    val esAdmin = listaAdministradores.contains(miUid) || esCreador
 
     Scaffold(
         topBar = {
@@ -124,7 +125,7 @@ fun PantallaDetalleGrupo(
                     TopAppBarDetalleGrupo(
                         nombreGrupo = nombreGrupoActual,
                         pestañaSeleccionada = tabSeleccionada,
-                        esAdminOCreador = esCreador || listaAdministradores.contains(miUid),
+                        esAdminOCreador = esAdmin,
                         esCreador = esCreador,
                         grupoId = grupo.id,
                         onVolver = onVolver,
@@ -179,8 +180,13 @@ fun PantallaDetalleGrupo(
             Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
                 when (tabSeleccionada) {
                     0 -> SeccionDetalles(
-                        grupo = grupo, nombreActual = nombreGrupoActual, descripcionActual = descripcionGrupoActual, esCreador = esCreador,
-                        listaSolicitudes = listaSolicitudes, cargandoSolicitudes = cargandoSolicitudes,
+                        grupo = grupo,
+                        nombreActual = nombreGrupoActual,
+                        descripcionActual = descripcionGrupoActual,
+                        esCreador = esCreador,
+                        esAdmin = esAdmin,
+                        listaSolicitudes = listaSolicitudes,
+                        cargandoSolicitudes = cargandoSolicitudes,
                         onSolicitudProcesada = { uid, aceptada ->
                             if (aceptada) firestore.aceptarSolicitudDeUnion(grupo.id, uid) { if (it) Toast.makeText(context, "Miembro aceptado", Toast.LENGTH_SHORT).show() }
                             else firestore.rechazarSolicitudDeUnion(grupo.id, uid) { if (it) Toast.makeText(context, "Solicitud rechazada", Toast.LENGTH_SHORT).show() }

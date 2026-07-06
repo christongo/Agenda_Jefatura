@@ -1,6 +1,7 @@
 package com.agendaapppractica.agendaappxd.interfazUI.pantallas
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Key
@@ -25,14 +26,13 @@ fun PantallaUnirseGrupo(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-
-    val esCodigoValido = codigoGroup.trim().length >= 10
+    val esCodigoValido = codigoGroup.trim().length == 6
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Grupos") },
+                title = { Text("Unirse con Código", style = MaterialTheme.typography.titleLarge) },
                 navigationIcon = {
                     IconButton(onClick = onVolver, enabled = !cargando) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
@@ -55,19 +55,19 @@ fun PantallaUnirseGrupo(
                 imageVector = Icons.Default.Key,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(64.dp)
+                modifier = Modifier.size(72.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Unirse a un Grupo",
+                text = "Ingresa al Espacio",
                 style = MaterialTheme.typography.headlineMedium,
                 textAlign = TextAlign.Center
             )
 
             Text(
-                text = "Copia el código de acceso largo desde los detalles del grupo e ingrésalo abajo para enviar tu solicitud.",
+                text = "Digita el código numérico de 6 dígitos que te facilitó el administrador de la comunidad para enviar tu solicitud.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -79,16 +79,18 @@ fun PantallaUnirseGrupo(
             OutlinedTextField(
                 value = codigoGroup,
                 onValueChange = { input ->
-                    codigoGroup = input.filter { it.isLetterOrDigit() }
+                    if (input.length <= 6) {
+                        codigoGroup = input.filter { it.isDigit() }
+                    }
                 },
-                label = { Text("Código de Acceso del Grupo") },
-                placeholder = { Text("Ej: ycUYMjdkO2QK37I30gav") },
+                label = { Text("Código de Acceso (6 números)") },
+                placeholder = { Text("Ej: 548312") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !cargando,
                 supportingText = {
                     Text(
-                        text = "Caracteres introducidos: ${codigoGroup.length}",
+                        text = "${codigoGroup.length} / 6 dígitos",
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.End,
                         style = MaterialTheme.typography.bodySmall
@@ -107,22 +109,15 @@ fun PantallaUnirseGrupo(
                     if (esCodigoValido) {
                         cargando = true
 
-                        firestore.unirseAGrupo(codigoGroup.trim()) { exitoso ->
+                        firestore.unirseAGrupo(codigoGroup.trim()) { exitoso, mensaje ->
                             cargando = false
-                            if (exitoso) {
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = "¡Solicitud enviada al administrador!",
-                                        duration = SnackbarDuration.Short
-                                    )
+                            scope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = mensaje,
+                                    duration = if (exitoso) SnackbarDuration.Short else SnackbarDuration.Long
+                                )
+                                if (exitoso) {
                                     onVolver()
-                                }
-                            } else {
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = "El código no existe o ya eres miembro de este grupo.",
-                                        duration = SnackbarDuration.Long
-                                    )
                                 }
                             }
                         }
@@ -130,8 +125,9 @@ fun PantallaUnirseGrupo(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
-                enabled = esCodigoValido && !cargando
+                    .height(52.dp),
+                enabled = esCodigoValido && !cargando,
+                shape = RoundedCornerShape(14.dp)
             ) {
                 if (cargando) {
                     CircularProgressIndicator(
@@ -140,7 +136,7 @@ fun PantallaUnirseGrupo(
                         strokeWidth = 2.5.dp
                     )
                 } else {
-                    Text("Unirse al grupo", style = MaterialTheme.typography.titleMedium)
+                    Text("Enviar Solicitud de Ingreso", style = MaterialTheme.typography.titleMedium)
                 }
             }
         }

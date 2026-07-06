@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.NavigateNext
-import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,7 +29,6 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.agendaapppractica.agendaappxd.interfazUI.pantallas.componentes.*
 import com.agendaapppractica.agendaappxd.model.Tarea
 import com.agendaapppractica.agendaappxd.networkData.FirestoreManager
-import com.agendaapppractica.agendaappxd.networkData.LectorQRManager
 import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -52,7 +50,6 @@ fun PantallaInicio(
     var misGruposIds by remember { mutableStateOf<List<String>>(emptyList()) }
 
     var mapaNombresGrupos by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
-
     var mapaProductividadReal by remember { mutableStateOf<Map<String, List<Tarea>>>(emptyMap()) }
 
     var mostrarDialogoEventos by remember { mutableStateOf(false) }
@@ -152,20 +149,6 @@ fun PantallaInicio(
                     BotonPanelHerramientas("Notas", "Apuntes rápidos", Icons.Default.Description, MaterialTheme.colorScheme.tertiary, Modifier.weight(1f)) { navController.navigate("bloc_notas") }
                     BotonPanelHerramientas("Documentos", "Escanear PDF", Icons.Default.DocumentScanner, MaterialTheme.colorScheme.error, Modifier.weight(1f)) { navController.navigate("documentos") }
                 }
-
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    BotonPanelHerramientas(
-                        titulo = "Escáner QR Corporativo",
-                        subtitulo = "Importar contactos, credenciales o eventos de inmediato",
-                        icono = Icons.Default.QrCodeScanner,
-                        colorBase = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        LectorQRManager.iniciarEscaneoFuncional(context) { resultadoContenido ->
-                            Toast.makeText(context, "Contenido QR Detectado: $resultadoContenido", Toast.LENGTH_LONG).show()
-                        }
-                    }
-                }
             }
         }
     }
@@ -196,7 +179,7 @@ fun DialogoTutorialInicio(
     onNoMostrarMas: () -> Unit
 ) {
     var pasoActual by remember { mutableStateOf(1) }
-    val totalPasos = 3
+    val totalPasos = 2
     val progresoAnimado = pasoActual.toFloat() / totalPasos.toFloat()
 
     Dialog(onDismissRequest = onDismiss) {
@@ -216,8 +199,7 @@ fun DialogoTutorialInicio(
                     Icon(
                         imageVector = when (pasoActual) {
                             1 -> Icons.Default.Dashboard
-                            2 -> Icons.Default.Group
-                            else -> Icons.Default.QrCodeScanner
+                            else -> Icons.Default.Group
                         },
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
@@ -230,7 +212,6 @@ fun DialogoTutorialInicio(
                 Text(
                     text = when (pasoActual) {
                         1 -> "Métricas de Rendimiento"
-                        2 -> "Gestión de Comunidades"
                         else -> "Módulos de Productividad"
                     },
                     style = MaterialTheme.typography.headlineSmall,
@@ -274,12 +255,8 @@ fun DialogoTutorialInicio(
                             Text("* Gráfico Semanal: Analiza de forma visual qué días registraste mayor actividad o completaste más tareas.\n* Acceso Rápido: Puedes pulsar directamente sobre el gráfico para abrir el panel con el desglose exacto de tus eventos agendados.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         2 -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("Conexión Institucional", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                            Text("* Unirse a Grupo: Permite ingresar una credencial alfanumérica compartida para integrarte a equipos existentes.\n* Mis Grupos: Te redirige al listado completo de espacios y canales corporativos en los que participas.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        3 -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("Utilidades de Conectividad Rápida", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                            Text("* Bloc de Notas: Espacio seguro para guardar apuntes rápidos y minutas temporales.\n* Escáner PDF: Herramienta inteligente para digitalizar archivos físicos.\n* Escáner QR: Lector instantáneo para importar eventos corporativos o tarjetas de contacto de colegas sin digitar nada.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("Conexión Institucional y Utilidades", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text("* Unirse a Grupo: Permite ingresar el código largo del grupo para integrarte a equipos existentes.\n* Bloc de Notas: Espacio seguro para guardar apuntes rápidos y minutas temporales.\n* Escáner PDF: Herramienta inteligente para digitalizar tus archivos físicos.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }

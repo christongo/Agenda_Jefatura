@@ -285,7 +285,6 @@ fun DialogNuevaTarea(
         }
     )
 
-
     if (showModalProgramacion) {
         ModalProgramarHorario(
             fechaInicio = fechaInicio,

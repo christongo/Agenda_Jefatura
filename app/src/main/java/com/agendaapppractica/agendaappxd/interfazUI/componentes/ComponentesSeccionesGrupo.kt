@@ -46,6 +46,7 @@ fun SeccionDetalles(
     nombreActual: String,
     descripcionActual: String,
     esCreador: Boolean,
+    esAdmin: Boolean,
     listaSolicitudes: List<MiembroUsuario>,
     cargandoSolicitudes: Boolean,
     onSolicitudProcesada: (String, Boolean) -> Unit,
@@ -65,19 +66,26 @@ fun SeccionDetalles(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(modifier = Modifier.padding(vertical = 16.dp), contentAlignment = Alignment.BottomEnd) {
             Box(
-                modifier = Modifier.size(100.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
                 if (!grupo.fotoGrupo.isNullOrBlank()) {
                     AsyncImage(
                         model = grupo.fotoGrupo,
                         contentDescription = "Foto del grupo",
-                        modifier = Modifier.fillMaxSize().clip(CircleShape),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape),
                         contentScale = ContentScale.Crop
                     )
                 } else {
@@ -92,7 +100,9 @@ fun SeccionDetalles(
             if (esCreador) {
                 IconButton(
                     onClick = { galeriaLauncher.launch("image/*") },
-                    modifier = Modifier.size(32.dp).background(MaterialTheme.colorScheme.primary, CircleShape)
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(MaterialTheme.colorScheme.primary, CircleShape)
                 ) {
                     Icon(
                         Icons.Default.CameraAlt,
@@ -103,6 +113,7 @@ fun SeccionDetalles(
                 }
             }
         }
+
         Text(text = nombreActual, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(4.dp))
         Text(text = "${grupo.miembros.size} Miembros activos", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
@@ -114,7 +125,9 @@ fun SeccionDetalles(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -122,8 +135,12 @@ fun SeccionDetalles(
                     Icon(Icons.Default.Key, contentDescription = "Código", tint = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text("Código de acceso", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline)
-                        Text(text = if (codigoVisible) grupo.id else "••••••", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                        Text("Código de acceso de 6 dígitos", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline)
+                        Text(
+                            text = if (codigoVisible) grupo.codigo else "••••••",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
                 Row {
@@ -131,8 +148,8 @@ fun SeccionDetalles(
                         Icon(imageVector = if (codigoVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility, contentDescription = "Mostrar")
                     }
                     IconButton(onClick = {
-                        clipboardManager.setText(AnnotatedString(grupo.id))
-                        Toast.makeText(context, "¡Código copiado!", Toast.LENGTH_SHORT).show()
+                        clipboardManager.setText(AnnotatedString(grupo.codigo))
+                        Toast.makeText(context, "¡Código corporativo copiado!", Toast.LENGTH_SHORT).show()
                     }) {
                         Icon(Icons.Default.ContentCopy, contentDescription = "Copiar")
                     }
@@ -142,10 +159,10 @@ fun SeccionDetalles(
 
         Spacer(Modifier.height(16.dp))
 
-        if (esCreador) {
+        if (esCreador || esAdmin) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -162,19 +179,23 @@ fun SeccionDetalles(
                     Spacer(Modifier.height(12.dp))
 
                     if (cargandoSolicitudes) {
-                        Box(modifier = Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
+                        Box(modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator(modifier = Modifier.size(24.dp))
                         }
                     } else if (listaSolicitudes.isEmpty()) {
                         Text(
-                            text = "No tienes invitaciones o peticiones pendientes.",
+                            text = "No tienes peticiones pendientes.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.outline
                         )
                     } else {
                         listaSolicitudes.forEach { solicitante ->
                             Row(
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
@@ -182,16 +203,20 @@ fun SeccionDetalles(
                                     Text(text = solicitante.nombre, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                                     Text(text = solicitante.correo, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                                 }
-                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     IconButton(
                                         onClick = { onSolicitudProcesada(solicitante.uid, true) },
-                                        modifier = Modifier.background(MaterialTheme.colorScheme.primary, CircleShape).size(32.dp)
+                                        modifier = Modifier
+                                            .background(MaterialTheme.colorScheme.primary, CircleShape)
+                                            .size(32.dp)
                                     ) {
                                         Icon(Icons.Default.Check, contentDescription = "Aceptar", tint = Color.White, modifier = Modifier.size(16.dp))
                                     }
                                     IconButton(
                                         onClick = { onSolicitudProcesada(solicitante.uid, false) },
-                                        modifier = Modifier.background(MaterialTheme.colorScheme.errorContainer, CircleShape).size(32.dp)
+                                        modifier = Modifier
+                                            .background(MaterialTheme.colorScheme.errorContainer, CircleShape)
+                                            .size(32.dp)
                                     ) {
                                         Icon(Icons.Default.Close, contentDescription = "Rechazar", tint = MaterialTheme.colorScheme.onErrorContainer, modifier = Modifier.size(16.dp))
                                     }
@@ -220,7 +245,9 @@ fun SeccionPublicaciones(eventosActivos: List<Tarea>, subPestañaPublicaciones: 
     Column(modifier = Modifier.fillMaxSize()) {
         SecondaryTabRow(
             selectedTabIndex = subPestañaPublicaciones,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
         ) {
             Tab(
                 selected = subPestañaPublicaciones == 0,
@@ -245,7 +272,9 @@ fun SeccionPublicaciones(eventosActivos: List<Tarea>, subPestañaPublicaciones: 
         }
 
         if (listaFiltradaInterna.isEmpty()) {
-            Box(modifier = Modifier.fillMaxWidth().padding(top = 40.dp), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 40.dp), contentAlignment = Alignment.Center) {
                 Text(
                     text = if (subPestañaPublicaciones == 0) "No hay eventos programados en este grupo." else "No hay anuncios publicados todavía.",
                     color = MaterialTheme.colorScheme.outline

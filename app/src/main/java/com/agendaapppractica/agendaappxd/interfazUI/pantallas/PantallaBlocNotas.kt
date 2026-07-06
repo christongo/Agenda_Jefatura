@@ -18,19 +18,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 
 data class NotaModel(
     val id: String = "",
     val titulo: String = "",
     val contenido: String = "",
-    val usuarioId: String = ""
+    val usuarioId: String = "" ,
+    val esChecklist: Boolean = false,
+    val completada: Boolean = false
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -163,15 +165,35 @@ fun PantallaBlocNotas(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                if (nota.esChecklist) {
+                                    Checkbox(
+                                        checked = nota.completada,
+                                        onCheckedChange = { nuevoEstado ->
+                                            db.collection("notas")
+                                                .document(nota.id)
+                                                .update("completada", nuevoEstado)
+                                        },
+                                        colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                }
+
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(nota.titulo, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    Text(
+                                        text = nota.titulo,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp,
+                                        textDecoration = if (nota.esChecklist && nota.completada) TextDecoration.LineThrough else TextDecoration.None,
+                                        color = if (nota.esChecklist && nota.completada) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface
+                                    )
                                     if (nota.contenido.isNotBlank()) {
                                         Spacer(Modifier.height(4.dp))
                                         Text(
                                             text = nota.contenido,
                                             style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            maxLines = 2
+                                            color = if (nota.esChecklist && nota.completada) MaterialTheme.colorScheme.outline.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 2,
+                                            textDecoration = if (nota.esChecklist && nota.completada) TextDecoration.LineThrough else TextDecoration.None
                                         )
                                     }
                                 }
