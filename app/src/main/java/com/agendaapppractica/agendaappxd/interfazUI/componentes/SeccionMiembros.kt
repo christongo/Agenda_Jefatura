@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.RemoveModerator
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.*
@@ -27,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.agendaapppractica.agendaappxd.model.Grupo
 import com.agendaapppractica.agendaappxd.model.MiembroUsuario
+import com.agendaapppractica.agendaappxd.interfazUI.dialogos.DialogoDetalleMiembro
+import com.agendaapppractica.agendaappxd.networkData.FirestoreManager
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
@@ -40,60 +43,111 @@ fun SeccionMiembros(
 ) {
     val miUid = FirebaseAuth.getInstance().currentUser?.uid
     val esCreador = groupCreadorId(grupo, miUid)
+    val esAdminActual = administradoresLocales.contains(miUid)
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
+    val firestoreManager = remember { FirestoreManager() }
+
+    var miembroSeleccionadoId by remember { mutableStateOf<String?>(null) }
+    var mostrarDialogoDetalle by remember { mutableStateOf(false) }
+
+    var miembrosActivos by remember { mutableStateOf(listaMiembros) }
+
+    LaunchedEffect(listaMiembros) {
+        miembrosActivos = listaMiembros
+    }
 
     if (cargandoMiembros) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-    } else if (listaMiembros.isEmpty()) {
+    } else if (miembrosActivos.isEmpty()) {
         Text(text = "No hay miembros.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp))
     } else {
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxSize()) {
-            items(listaMiembros) { miembro ->
-                val esElCreadorDelGrupo = miembro.uid == grupo.creadorId
-                val esAdminReal = administradoresLocales.contains(miembro.uid)
-                var mostrarMenu by remember { mutableStateOf(false) }
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxSize()) {
+                items(miembrosActivos) { miembro ->
+                    val esElCreadorDelGrupo = miembro.uid == grupo.creadorId
+                    val esAdminReal = administradoresLocales.contains(miembro.uid)
+                    var mostrarMenu by remember { mutableStateOf(false) }
 
-                Card(
-                    modifier = Modifier.fillMaxWidth().clickable { onMiembroClick(miembro.uid) },
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-                ) {
-                    Row(modifier = Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        if (!miembro.fotoUrl.isNullOrBlank()) {
-                            AsyncImage(model = miembro.fotoUrl, contentDescription = null, modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant), contentScale = ContentScale.Crop)
-                        } else {
-                            Box(modifier = Modifier.size(40.dp).background(MaterialTheme.colorScheme.primary, CircleShape), contentAlignment = Alignment.Center) {
-                                Text(text = miembro.nombre.take(1).uppercase(), color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = miembro.nombre, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                                Spacer(modifier = Modifier.width(6.dp))
-                                IconButton(onClick = { clipboardManager.setText(AnnotatedString(miembro.uid)); Toast.makeText(context, "ID copiado", Toast.LENGTH_SHORT).show() }, modifier = Modifier.size(20.dp)) {
-                                    Icon(Icons.Default.ContentCopy, null, modifier = Modifier.size(14.dp), tint = Color.Gray)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                miembroSeleccionadoId = miembro.uid
+                                mostrarDialogoDetalle = true
+                                onMiembroClick(miembro.uid)
+                            },
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                    ) {
+                        Row(modifier = Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            if (!miembro.fotoUrl.isNullOrBlank()) {
+                                AsyncImage(model = miembro.fotoUrl, contentDescription = null, modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant), contentScale = ContentScale.Crop)
+                            } else {
+                                Box(modifier = Modifier.size(40.dp).background(MaterialTheme.colorScheme.primary, CircleShape), contentAlignment = Alignment.Center) {
+                                    Text(text = miembro.nombre.take(1).uppercase(), color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
                                 }
                             }
-                            Text(text = when { esElCreadorDelGrupo -> "Creador"; esAdminReal -> "Administrador"; else -> "Miembro" }, style = MaterialTheme.typography.bodySmall)
-                        }
 
-                        if (esCreador && !esElCreadorDelGrupo) {
-                            Box {
-                                IconButton(onClick = { mostrarMenu = true }) { Icon(Icons.Default.MoreVert, null) }
-                                DropdownMenu(expanded = mostrarMenu, onDismissRequest = { mostrarMenu = false }) {
-                                    DropdownMenuItem(
-                                        text = { Text(if (!esAdminReal) "Hacer Administrador" else "Quitar Administrador") },
-                                        onClick = { mostrarMenu = false; onGestionarAdmin(miembro.uid, esAdminReal) },
-                                        leadingIcon = { Icon(if (!esAdminReal) Icons.Default.Shield else Icons.Default.RemoveModerator, null) }
-                                    )
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(text = miembro.nombre, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    IconButton(onClick = { clipboardManager.setText(AnnotatedString(miembro.uid)); Toast.makeText(context, "ID copiado", Toast.LENGTH_SHORT).show() }, modifier = Modifier.size(20.dp)) {
+                                        Icon(Icons.Default.ContentCopy, null, modifier = Modifier.size(14.dp), tint = Color.Gray)
+                                    }
+                                }
+                                Text(
+                                    text = when {
+                                        esElCreadorDelGrupo -> "👑 Creador"
+                                        esAdminReal -> "🛡️ Administrador"
+                                        else -> "👤 Miembro"
+                                    },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = if (esElCreadorDelGrupo || esAdminReal) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (esElCreadorDelGrupo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
+                            if ((esCreador || esAdminActual) && !esElCreadorDelGrupo && miembro.uid != miUid) {
+                                Box {
+                                    IconButton(onClick = { mostrarMenu = true }) { Icon(Icons.Default.MoreVert, null) }
+                                    DropdownMenu(expanded = mostrarMenu, onDismissRequest = { mostrarMenu = false }) {
+
+                                        if (esCreador) {
+                                            DropdownMenuItem(
+                                                text = { Text(if (!esAdminReal) "Hacer Administrador" else "Quitar Administrador") },
+                                                onClick = { mostrarMenu = false; onGestionarAdmin(miembro.uid, esAdminReal) },
+                                                leadingIcon = { Icon(if (!esAdminReal) Icons.Default.Shield else Icons.Default.RemoveModerator, null) }
+                                            )
+                                        }
+
+                                        DropdownMenuItem(
+                                            text = { Text("Expulsar del Grupo", color = MaterialTheme.colorScheme.error) },
+                                            onClick = {
+                                                mostrarMenu = false
+                                                firestoreManager.expulsarMiembro(grupo.id, miembro.uid)
+                                                miembrosActivos = miembrosActivos.filter { it.uid != miembro.uid }
+                                                Toast.makeText(context, "${miembro.nombre} ha sido removido", Toast.LENGTH_SHORT).show()
+                                            },
+                                            leadingIcon = { Icon(Icons.Default.PersonRemove, null, tint = MaterialTheme.colorScheme.error) }
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
+            }
+            if (mostrarDialogoDetalle && miembroSeleccionadoId != null) {
+                DialogoDetalleMiembro(
+                    uidMiembro = miembroSeleccionadoId!!,
+                    onDismiss = {
+                        mostrarDialogoDetalle = false
+                        miembroSeleccionadoId = null
+                    }
+                )
             }
         }
     }

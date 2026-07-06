@@ -123,7 +123,6 @@ fun SeccionDetalles(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text("Código de acceso", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline)
-                        // Modificado para mostrar solo 6 puntos fijos cuando está oculto
                         Text(text = if (codigoVisible) grupo.id else "••••••", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
                     }
                 }

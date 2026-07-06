@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -39,6 +41,9 @@ fun DialogoEditarPerfil(
     var apellido by remember { mutableStateOf(apellidoActual) }
     var telefono by remember { mutableStateOf(telefonoActual) }
     var fecha by remember { mutableStateOf(fechaActual) }
+
+    val esTelefonoValido = telefono.isBlank() || (telefono.all { it.isDigit() } && telefono.length in 7..15)
+    val puedeGuardar = nombre.isNotBlank() && apellido.isNotBlank() && esTelefonoValido
 
     val db = FirebaseFirestore.getInstance()
     val auth = FirebaseAuth.getInstance()
@@ -106,17 +111,30 @@ fun DialogoEditarPerfil(
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
+
+
                 OutlinedTextField(
                     value = telefono,
-                    onValueChange = { telefono = it },
+                    onValueChange = { input ->
+
+                        if (input.all { it.isDigit() }) { telefono = input }
+                    },
                     label = { Text("Teléfono") },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    isError = !esTelefonoValido,
+                    supportingText = {
+                        if (!esTelefonoValido) {
+                            Text("Número no válido (Debe tener entre 7 y 15 dígitos)", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
             }
         },
         confirmButton = {
             Button(
+                enabled = puedeGuardar,
                 onClick = {
                     uid?.let {
                         val datos = mapOf(

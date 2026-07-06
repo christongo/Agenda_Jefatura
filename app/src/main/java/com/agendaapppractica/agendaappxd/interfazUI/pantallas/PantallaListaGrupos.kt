@@ -146,7 +146,6 @@ fun PantallaGruposLista(
                         .fillMaxSize()
                         .padding(horizontal = 20.dp, vertical = 12.dp)
                 ) {
-                    // ================= SECCIÓN DE ACCESOS DIRECTOS FIJADOS =================
                     if (gruposFijados.isNotEmpty()) {
                         item(span = { GridItemSpan(maxLineSpan) }) {
                             Column(modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
@@ -234,7 +233,6 @@ fun PantallaGruposLista(
                         }
                     }
 
-                    // ================= CUADRÍCULA DE COMUNIDADES =================
                     items(if (gruposFijados.isEmpty()) grupos else gruposRestantes) { grupo ->
                         val uid = FirebaseAuth.getInstance().currentUser?.uid
                         val esCreador = grupo.creadorId == uid

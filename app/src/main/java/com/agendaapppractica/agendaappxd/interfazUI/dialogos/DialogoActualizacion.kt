@@ -17,7 +17,7 @@ fun DialogoActualizacion(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(28.dp), // Esquinas redondeadas idénticas a tu imagen
+        shape = RoundedCornerShape(28.dp),
         title = {
             Text(
                 text = "Actualización disponible",
@@ -39,7 +39,7 @@ fun DialogoActualizacion(
             Button(
                 onClick = onDescargar,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f), // Color morado de tu app
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f),
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
                 shape = RoundedCornerShape(20.dp),
@@ -55,7 +55,7 @@ fun DialogoActualizacion(
             ) {
                 Text(
                     text = "Más tarde",
-                    color = MaterialTheme.colorScheme.primary, // Ajustado a los textos morados de tu UI
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold
                 )
             }

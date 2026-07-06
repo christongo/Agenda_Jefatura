@@ -15,5 +15,14 @@ data class Tarea(
     val visibilidad: String = "personal",
     val grupoId: String = "",
     val esGlobal: Boolean = false,
-    val avisosMinutosAntes: List<Long> = listOf(10L, 60L, 1440L)
-)
+    val avisosMinutosAntes: List<Long> = listOf(10L, 60L, 1440L),
+
+    val completada: Boolean = false,
+    val nombreGrupo: String = ""
+) {
+    constructor() : this(
+        "", "", "", "", "", "", "", "", "", "",
+        "normal", "personal", "", false, listOf(10L, 60L, 1440L),
+        false, ""
+    )
+}

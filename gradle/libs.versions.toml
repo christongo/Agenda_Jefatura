@@ -22,6 +22,7 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 google-firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
 google-firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
 google-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version = "33.5.1" }
+google-play-services-code-scanner = { group = "com.google.android.gms", name = "play-services-code-scanner", version = "16.1.0" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

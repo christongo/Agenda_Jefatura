@@ -30,6 +30,7 @@ import java.util.Calendar
 @Composable
 fun DialogCrearPublicacion(
     grupoId: String,
+    nombreGrupo: String,
     firestore: FirestoreManager,
     feriados: List<FeriadoChile>,
     eventos: List<Tarea>,
@@ -158,6 +159,7 @@ fun DialogCrearPublicacion(
                         mostrarConfirmarAnuncioModal = false
                         firestore.crearEventoGrupo(
                             grupoId = grupoId,
+                            nombreGrupo = nombreGrupo,
                             titulo = nuevoAnuncioTitulo,
                             fecha = fechaInicioText,
                             hora = horaInicioText,
@@ -181,6 +183,7 @@ fun DialogCrearPublicacion(
                         mostrarConfirmarAnuncioModal = false
                         firestore.crearEventoGrupo(
                             grupoId = grupoId,
+                            nombreGrupo = nombreGrupo,
                             titulo = nuevoAnuncioTitulo,
                             fecha = fechaInicioText,
                             hora = horaInicioText,

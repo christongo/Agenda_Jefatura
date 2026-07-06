@@ -32,6 +32,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun DialogoCrearPublicacionGrupo(
     grupoId: String,
+    nombreGrupo: String,
     tipoPublicacion: String,
     onDismiss: () -> Unit
 ) {
@@ -41,7 +42,6 @@ fun DialogoCrearPublicacionGrupo(
     var tituloPublicacion by remember { mutableStateOf("") }
     var descripcionPublicacion by remember { mutableStateOf("") }
 
-    // 🛠️ MODIFICACIÓN: Lista limpia para el entorno de una empresa (sin clases/tareas)
     val opcionesSubtipo = if (tipoPublicacion == "Anuncio") {
         listOf("Aviso", "Alerta", "Recordatorio", "Informativo")
     } else {
@@ -49,7 +49,6 @@ fun DialogoCrearPublicacionGrupo(
     }
     var subtipoSeleccionado by remember { mutableStateOf(opcionesSubtipo.first()) }
 
-    // 🛠️ NUEVO: Estado para capturar la especificación de "Otro"
     var especificacionOtro by remember { mutableStateOf("") }
 
     var fechaInicio by remember { mutableStateOf(LocalDate.now()) }
@@ -83,13 +82,11 @@ fun DialogoCrearPublicacionGrupo(
         } catch (_: Exception) { false }
     }
 
-    // 🛠️ MODIFICACIÓN: Si es "Otro", el formulario pide obligatoriamente especificar qué es
     val esFormularioValido = remember(tituloPublicacion, esPeriodoValido, subtipoSeleccionado, especificacionOtro) {
         val condicionSubtipo = if (subtipoSeleccionado == "Otro") especificacionOtro.isNotBlank() else true
         tituloPublicacion.isNotBlank() && esPeriodoValido && condicionSubtipo
     }
 
-    // 🛠️ NUEVO: Determina la etiqueta final que se enviará a Firebase
     val subtipoFinal = if (subtipoSeleccionado == "Otro") especificacionOtro.trim() else subtipoSeleccionado
 
     val firestore = remember { FirestoreManager() }
@@ -181,7 +178,6 @@ fun DialogoCrearPublicacionGrupo(
                     }
                 }
 
-                // 🛠️ NUEVO: Input dinámico que aparece únicamente si se elige "Otro"
                 if (subtipoSeleccionado == "Otro") {
                     OutlinedTextField(
                         value = especificacionOtro,
@@ -231,6 +227,7 @@ fun DialogoCrearPublicacionGrupo(
                         } else {
                             firestore.crearEventoGrupo(
                                 grupoId = grupoId,
+                                nombreGrupo = nombreGrupo,
                                 titulo = "[$subtipoFinal] $tituloPublicacion",
                                 fecha = fechaInicio.format(formatoFechaApp),
                                 hora = horaInicioTexto,
@@ -362,7 +359,7 @@ fun DialogoCrearPublicacionGrupo(
             confirmButton = {
                 Button(onClick = {
                     mostrarConfirmarAnuncioPrioritario = false
-                    firestore.crearEventoGrupo(grupoId, "[$subtipoFinal] $tituloPublicacion", fechaInicio.format(formatoFechaApp), horaInicioTexto, fechaFin.format(formatoFechaApp), horaFinTexto, tipoPublicacion)
+                    firestore.crearEventoGrupo(grupoId, nombreGrupo, "[$subtipoFinal] $tituloPublicacion", fechaInicio.format(formatoFechaApp), horaInicioTexto, fechaFin.format(formatoFechaApp), horaFinTexto, tipoPublicacion)
                     Toast.makeText(context, "¡Publicado con notificación forzada!", Toast.LENGTH_SHORT).show()
                     onDismiss()
                 }) {
@@ -374,7 +371,7 @@ fun DialogoCrearPublicacionGrupo(
             dismissButton = {
                 TextButton(onClick = {
                     mostrarConfirmarAnuncioPrioritario = false
-                    firestore.crearEventoGrupo(grupoId, "[$subtipoFinal] $tituloPublicacion", fechaInicio.format(formatoFechaApp), horaInicioTexto, fechaFin.format(formatoFechaApp), horaFinTexto, tipoPublicacion)
+                    firestore.crearEventoGrupo(grupoId, nombreGrupo, "[$subtipoFinal] $tituloPublicacion", fechaInicio.format(formatoFechaApp), horaInicioTexto, fechaFin.format(formatoFechaApp), horaFinTexto, tipoPublicacion)
                     Toast.makeText(context, "Guardado en el feed silenciosamente", Toast.LENGTH_SHORT).show()
                     onDismiss()
                 }) { Text("Solo publicar silenciosamente", color = MaterialTheme.colorScheme.onSurfaceVariant) }

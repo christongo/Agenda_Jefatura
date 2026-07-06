@@ -14,9 +14,8 @@ android {
         minSdk = 24
         targetSdk = 35
 
-        // Actualizado para el cambio de versión
-        versionCode = 4
-        versionName = "1.1.7"
+        versionCode = 5
+        versionName = "1.1.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -42,7 +41,6 @@ android {
 
     buildFeatures {
         compose = true
-        // Genera la clase para leer v1.1.5 en el diálogo Acerca De
         buildConfig = true
     }
 }
@@ -97,6 +95,7 @@ dependencies {
 
     // Pa escanear pdf y documentos (Versión de Google)
     implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0")
+    implementation(libs.google.play.services.code.scanner)
 
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.10.1")

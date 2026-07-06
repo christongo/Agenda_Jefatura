@@ -63,6 +63,22 @@ fun DialogoDetalleMiembro(
                         }
                         Text(text = u.nombre, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                         Text(text = u.correo, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+
+                        if (!u.telefono.isNullOrBlank()) {
+                            Text(
+                                text = "Teléfono: ${u.telefono}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        } else {
+                            Text(
+                                text = "Sin teléfono registrado",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            )
+                        }
                     }
                 } ?: Text("No se pudo cargar la información del usuario.")
             }

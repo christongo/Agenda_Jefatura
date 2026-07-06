@@ -54,12 +54,13 @@ fun PantallaAjustes(
     val usuarioActual = auth.currentUser
     val db = FirebaseFirestore.getInstance()
 
+    val esUsuarioGoogle = usuarioActual?.providerData?.any { it.providerId == "google.com" } == true
+
     var nombreUsuario by remember { mutableStateOf(usuarioActual?.displayName ?: "Usuario") }
     var apellidoUsuario by remember { mutableStateOf("") }
     var telefonoUsuario by remember { mutableStateOf("") }
-    var fechaNacimientoUsuario by remember { mutableStateOf("") } // 🛠️ Añadido estado para la fecha
+    var fechaNacimientoUsuario by remember { mutableStateOf("") }
 
-    // Cambiado a Any? para admitir de manera ultra rápida tanto Uris locales como URLs de la red
     var fotoPerfilUri by remember { mutableStateOf<Any?>(null) }
 
     var dPerfil by remember { mutableStateOf(false) }
@@ -68,7 +69,6 @@ fun PantallaAjustes(
     var dPermisos by remember { mutableStateOf(false) }
     var dAcerca by remember { mutableStateOf(false) }
 
-    // === ESTADOS DE PERMISOS REACTIVOS ===
     var tienePermisoAlmacenamiento by remember { mutableStateOf(false) }
     var tienePermisoNotificaciones by remember { mutableStateOf(false) }
     var tienePermisoCamara by remember { mutableStateOf(false) }
@@ -121,7 +121,6 @@ fun PantallaAjustes(
         if (concedido) tienePermisoAlmacenamiento = true else abrirConfiguracionSistema()
     }
 
-    // 🛠️ Al elegir la foto, se asigna al estado local al instante (Pinta la UI sin esperar a Firebase)
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
             fotoPerfilUri = uri
@@ -137,7 +136,7 @@ fun PantallaAjustes(
                     nombreUsuario = doc.getString("nombre") ?: "Usuario"
                     apellidoUsuario = doc.getString("apellido") ?: ""
                     telefonoUsuario = doc.getString("telefono") ?: ""
-                    fechaNacimientoUsuario = doc.getString("fechaNacimiento") ?: "" // 🛠️ Sincronizar fecha de la nube
+                    fechaNacimientoUsuario = doc.getString("fechaNacimiento") ?: ""
 
                     doc.getString("fotoPerfilUrl")?.let {
                         if (it.isNotEmpty() && fotoPerfilUri == null) {
@@ -168,7 +167,15 @@ fun PantallaAjustes(
 
         Text("Cuenta y Configuración", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
         ItemAjuste(Icons.Default.AccountBox, "Ver y editar perfil", containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White) { dPerfil = true }
-        ItemAjuste(Icons.Default.Lock, "Seguridad", "Cambiar contraseña") { dSeguridad = true }
+
+        ItemAjuste(
+            icon = Icons.Default.Lock,
+            title = "Seguridad",
+            subtitle = if (esUsuarioGoogle) "Te registraste con Google" else "Cambiar contraseña"
+        ) {
+            dSeguridad = true
+        }
+
         ItemAjuste(Icons.Default.Palette, "Personalización", "Tema, colores y texturas") { dPersonalizacion = true }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -195,7 +202,7 @@ fun PantallaAjustes(
             nombreActual = nombreUsuario,
             apellidoActual = apellidoUsuario,
             telefonoActual = telefonoUsuario,
-            fechaActual = fechaNacimientoUsuario, // 🛠️ Pasando la fecha correcta al diálogo
+            fechaActual = fechaNacimientoUsuario,
             correoUsuario = usuarioActual?.email ?: "",
             fotoPerfilUri = if (fotoPerfilUri is Uri) fotoPerfilUri as Uri else null,
             intentarCambiarFoto = {
@@ -209,13 +216,20 @@ fun PantallaAjustes(
                 nombreUsuario = n
                 apellidoUsuario = a
                 telefonoUsuario = t
-                fechaNacimientoUsuario = f // 🛠️ Guardar la nueva fecha en el estado local
+                fechaNacimientoUsuario = f
                 dPerfil = false
             }
         )
     }
 
-    if (dSeguridad) DialogoSeguridadApp(usuarioActual?.email ?: "", { dSeguridad = false })
+    if (dSeguridad) {
+        DialogoSeguridadApp(
+            correoUsuario = usuarioActual?.email ?: "",
+            esGoogle = esUsuarioGoogle,
+            onDismiss = { dSeguridad = false }
+        )
+    }
+
     if (dAcerca) DialogoAcercaDe { dAcerca = false }
 
     if (dPermisos) {

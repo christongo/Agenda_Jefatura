@@ -25,7 +25,6 @@ fun DialogoEditarBiografiaGrupo(
     val firestore = remember { FirestoreManager() }
     val context = LocalContext.current
 
-    // 🛠️ CORRECCIÓN CLAVE: Sincroniza los estados editables si los parámetros iniciales cambian o tardan en cargar de Firebase
     LaunchedEffect(nombreInicial, descripcionInicial) {
         editNombre = nombreInicial
         editDescripcion = descripcionInicial

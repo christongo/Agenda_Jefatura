@@ -55,7 +55,6 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import java.io.File
 
-// === FUNCIÓN NATIVA DE COMPARTIR ===
 
 private fun compartirPdf(context: Context, archivo: File) {
     try {
@@ -390,7 +389,6 @@ fun PantallaDocumentos(navController: NavController) {
     }
 }
 
-// === COMPONENTE DEL TUTORIAL POR PASOS ===
 
 @Composable
 fun DialogoTutorialDocumentos(
@@ -603,7 +601,7 @@ fun VisorPdfInternoDialog(archivo: File, onDismiss: () -> Unit) {
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false) // Permite pantalla completa ocupando los márgenes correctos
+        properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Surface(
             modifier = Modifier.fillMaxSize(),

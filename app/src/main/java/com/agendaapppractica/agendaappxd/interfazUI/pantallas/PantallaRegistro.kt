@@ -39,7 +39,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
 
-// Función de utilidad para extraer el Activity en la pantalla de Registro
 private fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
     is ContextWrapper -> baseContext.findActivity()
@@ -67,7 +66,7 @@ fun PantallaRegistro(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // Tu ID real de cliente web de Firebase integrado
+
     val webClientId = "342977426699-d9uak4tovu00mvot8qbur68vh6qb01e5.apps.googleusercontent.com"
 
     val animacionEntradaScale = remember { Animatable(0.95f) }
@@ -304,7 +303,6 @@ fun PantallaRegistro(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // BOTÓN DE GOOGLE OPTIMIZADO PARA REGISTRO
             OutlinedButton(
                 onClick = {
                     mensaje = ""
@@ -329,7 +327,6 @@ fun PantallaRegistro(
 
                     coroutineScope.launch {
                         try {
-                            // Cambiamos el contexto genérico por la actividad real
                             val result = credentialManager.getCredential(context = actividadReal, request = request)
                             val credential = result.credential
 

@@ -71,6 +71,18 @@ class FirestoreManager {
             }
     }
 
+    fun escucharDatosGrupo(grupoId: String, callback: (Grupo?) -> Unit) {
+        db.collection(coleccionGrupos).document(grupoId)
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.e("FIRESTORE", "Error al escuchar datos del grupo", e)
+                    return@addSnapshotListener
+                }
+                val grupo = snapshot?.toObject(Grupo::class.java)
+                callback(grupo)
+            }
+    }
+
     fun escucharTareasDelDia(fecha: String, misGruposIds: List<String>, callback: (List<Tarea>) -> Unit) {
         val uid = auth.currentUser?.uid ?: return callback(emptyList())
 
@@ -93,13 +105,9 @@ class FirestoreManager {
             }
     }
 
-    // ======================================================================
-    // 🛠️ FUNCIÓN OPTIMIZADA INTEGRADA DE FORMA SEGURA
-    // ======================================================================
     fun escucharTareasDelMes(mesAno: String, misGruposIds: List<String>, callback: (List<Tarea>) -> Unit) {
         val uid = auth.currentUser?.uid ?: return callback(emptyList())
 
-        // Evita crasheos de Firebase si el usuario aún no tiene grupos mapeados
         val listaGruposValida = if (misGruposIds.isEmpty()) listOf("") else misGruposIds
 
         db.collection(coleccionEventos)
@@ -117,7 +125,6 @@ class FirestoreManager {
                 val todosLosEventos = value.toObjects(Tarea::class.java)
 
                 val listaFiltrada = todosLosEventos.filter { tarea ->
-                    // Valida que el final de la cadena de fecha coincida con el mes/año actual ("MM/YYYY")
                     val coincideMes = tarea.fecha.endsWith(mesAno)
 
                     val tienePermiso = when (tarea.visibilidad) {
@@ -278,24 +285,6 @@ class FirestoreManager {
         }
     }
 
-    fun obtenerDatosUsuario(uid: String, onResultado: (MiembroUsuario) -> Unit) {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("usuarios").document(uid).get()
-            .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    val nombre = document.getString("nombre") ?: "Usuario"
-                    val correo = document.getString("correo") ?: "Sin correo"
-                    val fotoUrl = document.getString("fotoUrl")
-                    onResultado(MiembroUsuario(uid, nombre, correo, fotoUrl))
-                } else {
-                    onResultado(MiembroUsuario(uid, "Usuario Desconocido", "Sin correo", null))
-                }
-            }
-            .addOnFailureListener {
-                onResultado(MiembroUsuario(uid, "Error al cargar", "Sin correo", null))
-            }
-    }
-
     fun guardarUsuario(uid: String, nombre: String, email: String, fotoPerfil: String = "") {
         val usuario = hashMapOf("uid" to uid, "nombre" to nombre, "email" to email, "fotoPerfil" to fotoPerfil)
         db.collection("usuarios").document(uid).set(usuario)
@@ -306,10 +295,23 @@ class FirestoreManager {
             .addOnSuccessListener { callback(it.getString("nombre") ?: "usuario") }
     }
 
-    fun obtenerDatosUsuario(uid: String, callback: (String, String) -> Unit) {
+    fun obtenerDatosUsuario(uid: String, onResultado: (MiembroUsuario) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
         db.collection("usuarios").document(uid).get()
-            .addOnSuccessListener {
-                callback(it.getString("nombre") ?: "Usuario", it.getString("email") ?: "")
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    val nombre = document.getString("nombre") ?: "Usuario"
+                    val correo = document.getString("correo") ?: document.getString("email") ?: "Sin correo"
+                    val fotoUrl = document.getString("fotoUrl") ?: document.getString("fotoPerfil")
+                    val telefono = document.getString("telefono") ?: ""
+
+                    onResultado(MiembroUsuario(uid, nombre, correo, fotoUrl, telefono))
+                } else {
+                    onResultado(MiembroUsuario(uid, "Usuario Desconocido", "Sin correo", null, ""))
+                }
+            }
+            .addOnFailureListener {
+                onResultado(MiembroUsuario(uid, "Error al cargar", "Sin correo", null, ""))
             }
     }
 
@@ -377,6 +379,7 @@ class FirestoreManager {
 
     fun crearEventoGrupo(
         grupoId: String,
+        nombreGrupo: String,
         titulo: String,
         fecha: String,
         hora: String,
@@ -397,7 +400,9 @@ class FirestoreManager {
             visibilidad = "grupo",
             usuarioId = uid,
             grupoId = grupoId,
-            tipoEvento = tipo
+            nombreGrupo = nombreGrupo,
+            tipoEvento = tipo,
+            completada = false
         )
 
         db.collection(coleccionEventos)

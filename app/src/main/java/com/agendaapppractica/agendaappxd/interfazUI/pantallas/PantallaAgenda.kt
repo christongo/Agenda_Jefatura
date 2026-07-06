@@ -116,7 +116,6 @@ fun PantallaAgenda() {
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
-        // --- CABECERA CON BOTÓN INTUITIVO DE AYUDA (SIN EMOJIS) ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -345,7 +344,6 @@ fun PantallaAgenda() {
         )
     }
 
-    // --- DIÁLOGO TUTORIAL PARA LA AGENDA ---
     if (mostrarTutorial) {
         DialogoTutorialAgenda(
             onDismiss = { mostrarTutorial = false },
@@ -418,7 +416,6 @@ fun DialogoTutorialAgenda(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Indicador de progreso estructural
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -445,7 +442,6 @@ fun DialogoTutorialAgenda(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Textos descriptivos profesionales con viñetas textuales estrictas
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -500,7 +496,6 @@ fun DialogoTutorialAgenda(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Acciones inferiores
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,

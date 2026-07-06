@@ -95,9 +95,9 @@ fun DialogNuevaTarea(
     LaunchedEffect(Unit) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         if (uid != null) {
-            FirestoreManager().obtenerDatosUsuario(uid) { nombre, correo ->
-                nombreUsuario = nombre
-                correoUsuario = correo
+            FirestoreManager().obtenerDatosUsuario(uid) { usuario ->
+                nombreUsuario = usuario.nombre
+                correoUsuario = usuario.correo
             }
         }
     }

@@ -48,6 +48,8 @@ fun PantallaDetalleGrupo(
     var listaSolicitudes by remember { mutableStateOf<List<MiembroUsuario>>(emptyList()) }
     var eventosActivos by remember { mutableStateOf<List<Tarea>>(emptyList()) }
 
+    var listaAdministradores by remember { mutableStateOf<List<String>>(grupo.administradores) }
+
     var cargandoMiembros by remember { mutableStateOf(true) }
     var cargandoSolicitudes by remember { mutableStateOf(true) }
 
@@ -55,7 +57,6 @@ fun PantallaDetalleGrupo(
     var tipoPublicacionSeleccionada by remember { mutableStateOf("Evento") }
 
     var mostrarDialogoEdicion by remember { mutableStateOf(false) }
-
     var mostrarTutorial by remember { mutableStateOf(false) }
 
     LaunchedEffect(grupo.id) {
@@ -66,19 +67,25 @@ fun PantallaDetalleGrupo(
 
         firestore.escucharEventosGrupo(grupo.id) { eventos -> eventosActivos = eventos }
 
-        val miembrosInfo = mutableListOf<MiembroUsuario>()
-        var miembrosCargados = 0
-        if (grupo.miembros.isEmpty()) {
-            listaMiembros = emptyList()
-            cargandoMiembros = false
-        } else {
-            grupo.miembros.forEach { uid ->
-                firestore.obtenerDatosUsuario(uid) { info ->
-                    miembrosInfo.add(info)
-                    miembrosCargados++
-                    if (miembrosCargados == grupo.miembros.size) {
-                        listaMiembros = miembrosInfo.toList()
-                        cargandoMiembros = false
+        firestore.escucharDatosGrupo(grupo.id) { grupoActualizado ->
+            grupoActualizado?.let { g ->
+                listaAdministradores = g.administradores
+
+                val miembrosInfo = mutableListOf<MiembroUsuario>()
+                var miembrosCargados = 0
+                if (g.miembros.isEmpty()) {
+                    listaMiembros = emptyList()
+                    cargandoMiembros = false
+                } else {
+                    g.miembros.forEach { uid ->
+                        firestore.obtenerDatosUsuario(uid) { info ->
+                            miembrosInfo.add(info)
+                            miembrosCargados++
+                            if (miembrosCargados == g.miembros.size) {
+                                listaMiembros = miembrosInfo.toList()
+                                cargandoMiembros = false
+                            }
+                        }
                     }
                 }
             }
@@ -117,7 +124,7 @@ fun PantallaDetalleGrupo(
                     TopAppBarDetalleGrupo(
                         nombreGrupo = nombreGrupoActual,
                         pestañaSeleccionada = tabSeleccionada,
-                        esAdminOCreador = esCreador,
+                        esAdminOCreador = esCreador || listaAdministradores.contains(miUid),
                         esCreador = esCreador,
                         grupoId = grupo.id,
                         onVolver = onVolver,
@@ -140,7 +147,7 @@ fun PantallaDetalleGrupo(
             }
         },
         floatingActionButton = {
-            if (tabSeleccionada == 2 && esCreador) {
+            if (tabSeleccionada == 2 && (esCreador || listaAdministradores.contains(miUid))) {
                 FloatingActionButton(
                     onClick = {
                         tipoPublicacionSeleccionada = if (subTabPublicaciones == 0) "Evento" else "Anuncio"
@@ -166,7 +173,7 @@ fun PantallaDetalleGrupo(
             ) {
                 Tab(selected = tabSeleccionada == 0, onClick = { tabSeleccionada = 0 }, text = { Text("Detalles", fontWeight = FontWeight.Bold) }, icon = { Icon(Icons.Default.Info, null) })
                 Tab(selected = tabSeleccionada == 1, onClick = { tabSeleccionada = 1 }, text = { Text("Miembros", fontWeight = FontWeight.Bold) }, icon = { Icon(Icons.Default.People, null) })
-                Tab(selected = tabSeleccionada == 2, onClick = { tabSeleccionada = 2 }, text = { Text("Feed", fontWeight = FontWeight.Bold) }, icon = { Icon(Icons.Default.Campaign, null) })
+                Tab(selected = tabSeleccionada == 2, onClick = { tabSeleccionada = 2 }, text = { Text("Publicaciones", fontWeight = FontWeight.Bold) }, icon = { Icon(Icons.Default.Campaign, null) })
             }
 
             Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
@@ -181,10 +188,22 @@ fun PantallaDetalleGrupo(
                         onFotoCambiada = { _ -> }
                     )
                     1 -> SeccionMiembros(
-                        cargandoMiembros = cargandoMiembros, listaMiembros = listaMiembros, grupo = grupo, administradoresLocales = emptyList(),
-                        onMiembroClick = {}, onGestionarAdmin = { uid, esAdmin ->
-                            if (esAdmin) firestore.quitarAdministradorGrupo(grupo.id, uid) { }
-                            else firestore.asignarAdministradorGrupo(grupo.id, uid) { }
+                        cargandoMiembros = cargandoMiembros,
+                        listaMiembros = listaMiembros,
+                        grupo = grupo,
+                        administradoresLocales = listaAdministradores,
+                        onMiembroClick = { uid ->
+                        },
+                        onGestionarAdmin = { uid, esAdmin ->
+                            if (esAdmin) {
+                                firestore.quitarAdministradorGrupo(grupo.id, uid) { exitoso ->
+                                    if (exitoso) Toast.makeText(context, "Rango removido con éxito", Toast.LENGTH_SHORT).show()
+                                }
+                            } else {
+                                firestore.asignarAdministradorGrupo(grupo.id, uid) { exitoso ->
+                                    if (exitoso) Toast.makeText(context, "Nuevo administrador asignado", Toast.LENGTH_SHORT).show()
+                                }
+                            }
                         }
                     )
                     2 -> SeccionPublicaciones(eventosActivos = eventosActivos, subPestañaPublicaciones = subTabPublicaciones, onSubPestañaCambiada = { subTabPublicaciones = it })
@@ -193,7 +212,7 @@ fun PantallaDetalleGrupo(
         }
     }
 
-    if (showDialogCrearPublicacion) { DialogoCrearPublicacionGrupo(grupoId = grupo.id, tipoPublicacion = tipoPublicacionSeleccionada, onDismiss = { showDialogCrearPublicacion = false }) }
+    if (showDialogCrearPublicacion) { DialogoCrearPublicacionGrupo(grupoId = grupo.id, nombreGrupo = grupo.nombre, tipoPublicacion = tipoPublicacionSeleccionada, onDismiss = { showDialogCrearPublicacion = false }) }
     if (mostrarDialogoEdicion) { DialogoEditarBiografiaGrupo(grupoId = grupo.id, nombreInicial = nombreGrupoActual, descripcionInicial = descripcionGrupoActual, onDismiss = { mostrarDialogoEdicion = false }, onCambiosGuardados = { n, d -> nombreGrupoActual = n; descripcionGrupoActual = d }) }
 
     if (mostrarTutorial) {
@@ -231,7 +250,6 @@ fun DialogoTutorialPantalla(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // --- ICONO DE CABECERA ---
                 Box(
                     modifier = Modifier
                         .size(56.dp)
@@ -269,7 +287,6 @@ fun DialogoTutorialPantalla(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // --- INDICADOR DE PROGRESO ---
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -296,7 +313,6 @@ fun DialogoTutorialPantalla(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // --- CONTENIDO EXPLICATIVO ---
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -334,7 +350,7 @@ fun DialogoTutorialPantalla(
                         }
                         3 -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(
-                                text = "Tablón de Publicaciones (Feed)",
+                                text = "Tablón de Publicaciones (Publicaciones)",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -352,7 +368,6 @@ fun DialogoTutorialPantalla(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // --- ACCIONES DE CONTROL ---
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,

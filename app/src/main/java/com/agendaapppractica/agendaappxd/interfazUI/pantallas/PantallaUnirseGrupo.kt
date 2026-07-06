@@ -25,13 +25,16 @@ fun PantallaUnirseGrupo(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+
+    val esCodigoValido = codigoGroup.trim().length >= 10
+
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Grupos") },
                 navigationIcon = {
-                    IconButton(onClick = onVolver) {
+                    IconButton(onClick = onVolver, enabled = !cargando) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 }
@@ -64,7 +67,7 @@ fun PantallaUnirseGrupo(
             )
 
             Text(
-                text = "Pídele el código de invitación al administrador del grupo e ingrésalo abajo para sincronizar tus eventos.",
+                text = "Copia el código de acceso largo desde los detalles del grupo e ingrésalo abajo para enviar tu solicitud.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -73,19 +76,24 @@ fun PantallaUnirseGrupo(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Modificado: Ahora valida límites estrictos de 6 caracteres alfanuméricos en mayúsculas
             OutlinedTextField(
                 value = codigoGroup,
                 onValueChange = { input ->
-                    if (input.length <= 6) {
-                        codigoGroup = input.filter { it.isLetterOrDigit() }.uppercase()
-                    }
+                    codigoGroup = input.filter { it.isLetterOrDigit() }
                 },
-                label = { Text("Código del Grupo") },
-                placeholder = { Text("Ej: XY782B") },
+                label = { Text("Código de Acceso del Grupo") },
+                placeholder = { Text("Ej: ycUYMjdkO2QK37I30gav") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !cargando,
+                supportingText = {
+                    Text(
+                        text = "Caracteres introducidos: ${codigoGroup.length}",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.End,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline
@@ -96,10 +104,10 @@ fun PantallaUnirseGrupo(
 
             Button(
                 onClick = {
-                    if (codigoGroup.isNotBlank()) {
+                    if (esCodigoValido) {
                         cargando = true
 
-                        firestore.unirseAGrupo(codigoGroup) { exitoso ->
+                        firestore.unirseAGrupo(codigoGroup.trim()) { exitoso ->
                             cargando = false
                             if (exitoso) {
                                 scope.launch {
@@ -112,7 +120,7 @@ fun PantallaUnirseGrupo(
                             } else {
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
-                                        message = "El código ingresado no existe. Verifica e intenta de nuevo.",
+                                        message = "El código no existe o ya eres miembro de este grupo.",
                                         duration = SnackbarDuration.Long
                                     )
                                 }
@@ -123,7 +131,7 @@ fun PantallaUnirseGrupo(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                enabled = codigoGroup.isNotBlank() && !cargando
+                enabled = esCodigoValido && !cargando
             ) {
                 if (cargando) {
                     CircularProgressIndicator(

@@ -1,5 +1,6 @@
 package com.agendaapppractica.agendaappxd.interfazUI.dialogos
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,23 +10,152 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun DialogoSeguridadApp(email: String, onDismiss: () -> Unit) {
+fun DialogoSeguridadApp(
+    correoUsuario: String,
+    esGoogle: Boolean,
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    val auth = remember { FirebaseAuth.getInstance() }
+
+    var nuevaContrasenia by remember { mutableStateOf("") }
+    var confirmarContrasenia by remember { mutableStateOf("") }
+    var cargando by remember { mutableStateOf(false) }
+
+    var mostrarConfirmacion by remember { mutableStateOf(false) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Seguridad") },
-        text = { Text("Opciones de seguridad para $email") },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Aceptar") } }
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text("Correo asociado: $correoUsuario", style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.height(4.dp))
+
+                if (esGoogle) {
+                    Text(
+                        "Has iniciado sesión con Google. No es necesario cambiar la contraseña desde aquí ya que la seguridad es administrada por tu cuenta de Google.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    Text(
+                        "Escribe tu nueva contraseña a continuación para actualizarla inmediatamente.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    OutlinedTextField(
+                        value = nuevaContrasenia,
+                        onValueChange = { nuevaContrasenia = it },
+                        label = { Text("Nueva contraseña") },
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !cargando
+                    )
+
+                    OutlinedTextField(
+                        value = confirmarContrasenia,
+                        onValueChange = { confirmarContrasenia = it },
+                        label = { Text("Confirmar contraseña") },
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !cargando
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            if (esGoogle) {
+                TextButton(onClick = onDismiss) { Text("Aceptar") }
+            } else {
+                Button(
+                    onClick = {
+                        if (nuevaContrasenia.isBlank() || confirmarContrasenia.isBlank()) {
+                            Toast.makeText(context, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (nuevaContrasenia.length < 6) {
+                            Toast.makeText(context, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (nuevaContrasenia != confirmarContrasenia) {
+                            Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
+                        mostrarConfirmacion = true
+                    },
+                    enabled = !cargando
+                ) {
+                    if (cargando) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+                    } else {
+                        Text("Actualizar Clave")
+                    }
+                }
+            }
+        },
+        dismissButton = {
+            if (!esGoogle && !cargando) {
+                TextButton(onClick = onDismiss) { Text("Cancelar") }
+            }
+        }
     )
+
+    if (mostrarConfirmacion) {
+        AlertDialog(
+            onDismissRequest = { mostrarConfirmacion = false },
+            title = { Text("¿Estás seguro?") },
+            text = {
+                Text("¿Estás seguro de que deseas cambiar la contraseña? Esta acción actualizará tus credenciales de acceso de forma inmediata.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        mostrarConfirmacion = false
+                        cargando = true
+
+                        auth.currentUser?.updatePassword(nuevaContrasenia)
+                            ?.addOnCompleteListener { tarea ->
+                                cargando = false
+                                if (tarea.isSuccessful) {
+                                    Toast.makeText(context, "Contraseña modificada con éxito", Toast.LENGTH_SHORT).show()
+                                    onDismiss()
+                                } else {
+                                    Toast.makeText(context, "Error: ${tarea.exception?.localizedMessage}\n(Si el error persiste, cierra sesión y vuelve a entrar)", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                    }
+                ) {
+                    Text("Sí, cambiar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarConfirmacion = false }) {
+                    Text("No, cancelar")
+                }
+            }
+        )
+    }
 }
 
-// === DIÁLOGO DE PERMISOS COMPLETAMENTE RESUELTO ===
 @Composable
 fun DialogoPermisosApp(
     permisoAlmacenamiento: Boolean,
@@ -55,7 +185,6 @@ fun DialogoPermisosApp(
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                // Fila: Notificaciones
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                         Icon(
@@ -72,7 +201,6 @@ fun DialogoPermisosApp(
                     Switch(checked = permisoNotificaciones, onCheckedChange = { onCambiarNotificaciones() })
                 }
 
-                // Fila: Almacenamiento
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                         Icon(
@@ -89,7 +217,6 @@ fun DialogoPermisosApp(
                     Switch(checked = permisoAlmacenamiento, onCheckedChange = { onCambiarAlmacenamiento() })
                 }
 
-                // Fila: Cámara
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                         Icon(

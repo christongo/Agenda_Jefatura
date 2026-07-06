@@ -148,7 +148,6 @@ fun CalendarioChile(
                     modifier = Modifier
                         .padding(3.dp)
                         .size(46.dp)
-                        // DETALLE: Añadimos un borde rojo llamativo si el día tiene tareas guardadas y no está seleccionado
                         .then(
                             if (tieneEvento && !seleccionado) {
                                 Modifier.border(2.dp, Color(0xFFD32F2F), CircleShape)
@@ -188,7 +187,6 @@ fun CalendarioChile(
                                 modifier = Modifier
                                     .size(6.dp)
                                     .background(
-                                        // DETALLE: Cambiamos el color del punto inferior de azul a Rojo/Blanco para perfecta visibilidad
                                         if (seleccionado) MaterialTheme.colorScheme.onPrimary else Color(0xFFD32F2F),
                                         CircleShape
                                     )
