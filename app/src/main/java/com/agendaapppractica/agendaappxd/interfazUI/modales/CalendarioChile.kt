@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.agendaapppractica.agendaappxd.model.FeriadoChile
 import com.agendaapppractica.agendaappxd.model.Tarea
@@ -60,6 +61,18 @@ fun CalendarioChile(
     val nombreMes = mesVisible.month.getDisplayName(TextStyle.FULL, Locale("es", "CL"))
         .replaceFirstChar { it.uppercase() }
     val anio = mesVisible.year
+
+    val diasSemana = remember {
+        listOf(
+            DayOfWeek.MONDAY,
+            DayOfWeek.TUESDAY,
+            DayOfWeek.WEDNESDAY,
+            DayOfWeek.THURSDAY,
+            DayOfWeek.FRIDAY,
+            DayOfWeek.SATURDAY,
+            DayOfWeek.SUNDAY
+        )
+    }
 
     Column(modifier = Modifier.fillMaxWidth()) {
 
@@ -117,6 +130,31 @@ fun CalendarioChile(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+        ) {
+            diasSemana.forEach { dia ->
+                val inicialDia = dia.getDisplayName(TextStyle.NARROW, Locale("es", "CL")).uppercase()
+                val esFinDeSemana = dia == DayOfWeek.SATURDAY || dia == DayOfWeek.SUNDAY
+
+                Text(
+                    text = inicialDia,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                    color = if (esFinDeSemana) {
+                        MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
 
         HorizontalCalendar(
             state = calendarState,

@@ -149,7 +149,7 @@ fun PantallaDocumentos(navController: NavController) {
         topBar = {
             Column {
                 TopAppBar(
-                    title = { Text("Mis Documentos Corporativos") },
+                    title = { Text("Mis Documentos") },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")

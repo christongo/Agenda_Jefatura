@@ -122,7 +122,7 @@ fun PantallaAgenda() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Calendario Corporativo",
+                text = "Calendario",
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
             )
             IconButton(onClick = { mostrarTutorial = true }) {

@@ -281,7 +281,7 @@ fun DialogoTutorialPantalla(
 
                 Text(
                     text = when (pasoActual) {
-                        1 -> "¡Te damos la bienvenida!"
+                        1 -> "Te damos la bienvenida"
                         2 -> "Gestiona tu equipo"
                         else -> "Mantente al día"
                     },
